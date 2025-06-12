@@ -84,9 +84,11 @@ VITE_SUPABASE_ANON_KEY=tu_supabase_anon_key
 npm run dev
 ```
 
-## 🔧 Limpieza de Políticas RLS (Supabase)
+## 🔧 Scripts de Mantenimiento de Supabase
 
-Si experimentas warnings de RLS en Supabase, puedes ejecutar el script de limpieza:
+### Limpieza de Políticas RLS
+
+Si experimentas warnings de políticas RLS duplicadas en Supabase:
 
 ```bash
 # Asegúrate de tener configuradas las variables de entorno
@@ -101,6 +103,21 @@ Este script:
 - Elimina políticas RLS duplicadas
 - Crea políticas simplificadas para desarrollo
 - Fija el `search_path` en las funciones para evitar warnings
+
+### Corrección de Search Path en Funciones
+
+Si experimentas warnings de "Function Search Path Mutable" en Supabase:
+
+```bash
+# Ejecuta el script de corrección de search_path
+node fixFunctionSearchPath.mjs
+```
+
+Este script:
+- Recrea las funciones `get_current_user_id` y `get_current_user_role`
+- Fija explícitamente el `search_path = pg_catalog, public`
+- Elimina los warnings de seguridad relacionados con search_path mutable
+- Mantiene la funcionalidad de seguridad con `SECURITY DEFINER`
 
 ## 🗄️ Estructura de la Base de Datos
 
