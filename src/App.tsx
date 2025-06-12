@@ -9,7 +9,7 @@ import DashboardLayout from './components/Layout/DashboardLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UsersManagement from './pages/admin/UsersManagement';
 import GroupsManagement from './pages/admin/GroupsManagement';
-import CursosMateriasPage from './components/CursosMaterias/CursoMateriasPage';
+import CursoMateriasPage from './components/CursosMaterias/CursoMateriasPage';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import StudentDashboard from './pages/student/StudentDashboard';
 import ParentDashboard from './pages/parent/ParentDashboard';
