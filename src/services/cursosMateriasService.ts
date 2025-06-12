@@ -278,6 +278,15 @@ export class CursosMateriasService {
    * Suscribirse a cambios en tiempo real
    */
   static subscribeToChanges(callback: (payload: any) => void) {
+    // Check if we're using the mock client
+    if ((supabase as any).isMock) {
+      console.log('Real-time subscriptions not available in demo mode');
+      // Return a mock subscription object
+      return {
+        unsubscribe: () => console.log('Mock subscription unsubscribed')
+      };
+    }
+
     const subscription = supabase
       .channel('cursos_materias_changes')
       .on(
