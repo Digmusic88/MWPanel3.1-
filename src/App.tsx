@@ -6,6 +6,7 @@ import { GroupsProvider } from './context/GroupsContext';
 import { SubjectsProvider } from './context/SubjectsContext';
 import LoginPage from './pages/LoginPage';
 import DashboardLayout from './components/Layout/DashboardLayout';
+import CursoMateriasPage from './components/CursosMaterias/CursoMateriasPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UsersManagement from './pages/admin/UsersManagement';
 import GroupsManagement from './pages/admin/GroupsManagement';
@@ -61,7 +62,7 @@ function AppRoutes() {
         <Route index element={<AdminDashboard />} />
         <Route path="users" element={<UsersManagement />} />
         <Route path="groups" element={<GroupsManagement />} />
-        <Route path="courses" element={<CursosMateriasPage />} />
+        <Route path="courses" element={<CursoMateriasPage />} />
         <Route path="reports" element={<div className="p-6">Reportes y Análisis (Próximamente)</div>} />
         <Route path="settings" element={<div className="p-6">Configuración del Sistema (Próximamente)</div>} />
       </Route>
