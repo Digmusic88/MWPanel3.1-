@@ -84,6 +84,24 @@ VITE_SUPABASE_ANON_KEY=tu_supabase_anon_key
 npm run dev
 ```
 
+## 🔧 Limpieza de Políticas RLS (Supabase)
+
+Si experimentas warnings de RLS en Supabase, puedes ejecutar el script de limpieza:
+
+```bash
+# Asegúrate de tener configuradas las variables de entorno
+cp .env.example .env
+# Edita .env con tus credenciales de Supabase
+
+# Ejecuta el script de limpieza
+node fixSupabaseWarnings.mjs
+```
+
+Este script:
+- Elimina políticas RLS duplicadas
+- Crea políticas simplificadas para desarrollo
+- Fija el `search_path` en las funciones para evitar warnings
+
 ## 🗄️ Estructura de la Base de Datos
 
 ### Tablas Principales
