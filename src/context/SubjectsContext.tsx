@@ -841,3 +841,5 @@ export function useSubjects() {
 }
 
 export { useSubjects }
+
+export { useSubjects }
