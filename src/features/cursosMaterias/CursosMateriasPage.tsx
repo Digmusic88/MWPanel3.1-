@@ -8,6 +8,7 @@ import SubjectTabs from './components/SubjectTabs';
 import StudentCard from './components/StudentCard';
 import DroppableArea from './components/DroppableArea';
 import AddSubjectModal from './components/AddSubjectModal';
+import StudentManagementModal from './components/StudentManagementModal';
 import { Subject, StudentEnrollment } from '../../types/subjects';
 import { User } from '../../types';
 
@@ -39,6 +40,12 @@ export default function CursosMateriasPage() {
   const [activeDragData, setActiveDragData] = useState<DragData | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [studentManagementModal, setStudentManagementModal] = useState<{
+    isOpen: boolean;
+    subject?: Subject;
+    level?: any;
+    group?: any;
+  }>({ isOpen: false });
 
   const students = getUsersByRole('student');
   const teachers = getUsersByRole('teacher').map(teacher => ({
@@ -67,6 +74,19 @@ export default function CursosMateriasPage() {
       console.error('Error creating subject:', error);
       showNotification('error', error.message || 'Error al crear la materia');
     }
+  };
+
+  const handleEditStudents = (subject: Subject, level: any, group: any) => {
+    setStudentManagementModal({
+      isOpen: true,
+      subject,
+      level,
+      group
+    });
+  };
+
+  const handleCloseStudentManagement = () => {
+    setStudentManagementModal({ isOpen: false });
   };
   const handleSubjectSelect = (subjectId: string) => {
     if (!selectedSubjects.includes(subjectId)) {
@@ -280,6 +300,7 @@ export default function CursosMateriasPage() {
                                 title={`${group.name} - ${group.teacherName || 'Sin profesor'}`}
                                 subtitle={`${group.currentStudents}/${group.maxStudents} estudiantes`}
                                 type="group"
+                                onEditStudents={() => handleEditStudents(activeSubject, level, group)}
                               >
                                 <div className="space-y-2">
                                   {getStudentEnrollments(activeSubject.id)
@@ -371,6 +392,21 @@ export default function CursosMateriasPage() {
         onSubmit={handleAddSubject}
         teachers={teachers}
       />
+
+      {/* Student Management Modal */}
+      {studentManagementModal.isOpen && studentManagementModal.subject && studentManagementModal.level && studentManagementModal.group && (
+        <StudentManagementModal
+          isOpen={studentManagementModal.isOpen}
+          onClose={handleCloseStudentManagement}
+          subject={studentManagementModal.subject}
+          level={studentManagementModal.level}
+          group={studentManagementModal.group}
+          onStudentsUpdated={() => {
+            // Trigger a refresh of the data if needed
+            showNotification('success', 'Estudiantes actualizados');
+          }}
+        />
+      )}
     </div>
   );
 }

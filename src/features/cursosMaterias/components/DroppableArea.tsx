@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { Users, Trash2 } from 'lucide-react';
+import { Users, Trash2, Edit } from 'lucide-react';
 
 interface DroppableAreaProps {
   subjectId: string;
@@ -11,6 +11,7 @@ interface DroppableAreaProps {
   type: 'group' | 'remove';
   children: React.ReactNode;
   className?: string;
+  onEditStudents?: () => void;
 }
 
 export default function DroppableArea({
@@ -21,7 +22,8 @@ export default function DroppableArea({
   subtitle,
   type,
   children,
-  className = ''
+  className = '',
+  onEditStudents
 }: DroppableAreaProps) {
   const {
     isOver,
@@ -65,10 +67,22 @@ export default function DroppableArea({
             {title}
           </h4>
         </div>
-        {subtitle && (
-          <span className={`text-xs ${type === 'remove' ? 'text-red-600' : 'text-gray-500'}`}>
-            {subtitle}
-          </span>
+        <div className="flex items-center space-x-2">
+          {subtitle && (
+            <span className={`text-xs ${type === 'remove' ? 'text-red-600' : 'text-gray-500'}`}>
+              {subtitle}
+            </span>
+          )}
+          {type === 'group' && onEditStudents && (
+            <button
+              onClick={onEditStudents}
+              className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all duration-200 transform hover:scale-110"
+              title="Editar estudiantes del grupo"
+            >
+              <Edit className="w-4 h-4" />
+            </button>
+          )}
+        </div>
         )}
       </div>
 
