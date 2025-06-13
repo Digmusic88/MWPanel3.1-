@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Users, BookOpen, GraduationCap, Filter, Edit } from 'lucide-react';
+import { Search, Plus, Users, BookOpen, GraduationCap, Filter, Edit, Trash2, X } from 'lucide-react';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { useSubjects } from '../../context/SubjectsContext';
 import { useUsers } from '../../context/UsersContext';
@@ -11,6 +11,7 @@ import AddSubjectModal from './components/AddSubjectModal';
 import StudentManagementModal from './components/StudentManagementModal';
 import LevelEditModal from './components/LevelEditModal';
 import { Subject, StudentEnrollment } from '../../types/subjects';
+import SubjectForm from './components/SubjectForm';
 import { User } from '../../types';
 
 interface DragData {
@@ -25,6 +26,9 @@ export default function CursosMateriasPage() {
     subjects, 
     enrollments, 
     deleteGroup,
+    deleteSubject,
+    updateSubject,
+    updateGroup,
     addSubject,
     enrollStudent, 
     transferStudent, 
@@ -49,10 +53,19 @@ export default function CursosMateriasPage() {
     level?: any;
     group?: any;
   }>({ isOpen: false });
+  const [subjectEditModal, setSubjectEditModal] = useState<{
+    isOpen: boolean;
+    subject?: Subject;
+  }>({ isOpen: false });
   const [levelEditModal, setLevelEditModal] = useState<{
     isOpen: boolean;
     subject?: Subject;
     level?: any;
+  }>({ isOpen: false });
+  const [groupEditModal, setGroupEditModal] = useState<{
+    isOpen: boolean;
+    subject?: Subject;
+    group?: any;
   }>({ isOpen: false });
 
   const students = getUsersByRole('student');
@@ -81,6 +94,69 @@ export default function CursosMateriasPage() {
     } catch (error: any) {
       console.error('Error creating subject:', error);
       showNotification('error', error.message || 'Error al crear la materia');
+    }
+  };
+
+  const handleEditSubject = (subject: Subject) => {
+    setSubjectEditModal({
+      isOpen: true,
+      subject
+    });
+  };
+
+  const handleUpdateSubject = async (subjectData: Omit<Subject, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      if (!subjectEditModal.subject) return;
+      
+      await updateSubject(subjectEditModal.subject.id, subjectData);
+      showNotification('success', 'Materia actualizada exitosamente');
+      setSubjectEditModal({ isOpen: false });
+    } catch (error: any) {
+      console.error('Error updating subject:', error);
+      showNotification('error', error.message || 'Error al actualizar la materia');
+    }
+  };
+
+  const handleDeleteSubject = async (subjectId: string) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar esta materia? Esta acción eliminará todos los grupos y asignaciones asociadas.')) {
+      return;
+    }
+
+    try {
+      await deleteSubject(subjectId);
+      
+      // Remove from selected subjects and tabs
+      setSelectedSubjects(prev => prev.filter(id => id !== subjectId));
+      if (activeTab === subjectId) {
+        const newSelected = selectedSubjects.filter(id => id !== subjectId);
+        setActiveTab(newSelected.length > 0 ? newSelected[0] : '');
+      }
+      
+      showNotification('success', 'Materia eliminada exitosamente');
+    } catch (error: any) {
+      console.error('Error deleting subject:', error);
+      showNotification('error', error.message || 'Error al eliminar la materia');
+    }
+  };
+
+  const handleEditGroup = (subject: Subject, group: any) => {
+    setGroupEditModal({
+      isOpen: true,
+      subject,
+      group
+    });
+  };
+
+  const handleUpdateGroup = async (groupData: any) => {
+    try {
+      if (!groupEditModal.subject || !groupEditModal.group) return;
+      
+      await updateGroup(groupEditModal.subject.id, groupEditModal.group.id, groupData);
+      showNotification('success', 'Grupo actualizado exitosamente');
+      setGroupEditModal({ isOpen: false });
+    } catch (error: any) {
+      console.error('Error updating group:', error);
+      showNotification('error', error.message || 'Error al actualizar el grupo');
     }
   };
 
@@ -135,6 +211,7 @@ export default function CursosMateriasPage() {
       showNotification('error', error.message || 'Error al eliminar el grupo');
     }
   };
+
   const handleSubjectSelect = (subjectId: string) => {
     if (!selectedSubjects.includes(subjectId)) {
       const newSelected = [...selectedSubjects, subjectId];
@@ -353,6 +430,20 @@ export default function CursosMateriasPage() {
                           >
                             <Edit className="w-4 h-4" />
                           </button>
+                          <button
+                            onClick={() => handleEditSubject(activeSubject)}
+                            className="ml-2 p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all duration-200 transform hover:scale-110"
+                            title="Editar materia"
+                          >
+                            <BookOpen className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteSubject(activeSubject.id)}
+                            className="ml-2 p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-all duration-200 transform hover:scale-110"
+                            title="Eliminar materia"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </h3>
                         
                         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -369,6 +460,7 @@ export default function CursosMateriasPage() {
                                 type="group"
                                 onEditStudents={() => handleEditStudents(activeSubject, level, group)}
                                 onDeleteGroup={() => handleDeleteGroup(activeSubject, level, group)}
+                                onEditGroup={() => handleEditGroup(activeSubject, group)}
                               >
                                 <div className="space-y-2">
                                   {getStudentEnrollments(activeSubject.id)
@@ -484,6 +576,110 @@ export default function CursosMateriasPage() {
           level={levelEditModal.level}
           onSave={handleSaveLevel}
         />
+      )}
+
+      {/* Subject Edit Modal */}
+      {subjectEditModal.isOpen && subjectEditModal.subject && (
+        <SubjectForm
+          subject={subjectEditModal.subject}
+          mode="edit"
+          onSubmit={handleUpdateSubject}
+          onCancel={() => setSubjectEditModal({ isOpen: false })}
+        />
+      )}
+
+      {/* Group Edit Modal */}
+      {groupEditModal.isOpen && groupEditModal.subject && groupEditModal.group && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                <Users className="w-5 h-5 mr-2 text-blue-600" />
+                Editar Grupo
+              </h2>
+              <button
+                onClick={() => setGroupEditModal({ isOpen: false })}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const groupData = {
+                name: formData.get('name') as string,
+                teacherId: formData.get('teacherId') as string,
+                maxStudents: parseInt(formData.get('maxStudents') as string)
+              };
+              handleUpdateGroup(groupData);
+            }} className="p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nombre del Grupo
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  defaultValue={groupEditModal.group.name}
+                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all border-gray-300"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Profesor
+                </label>
+                <select
+                  name="teacherId"
+                  defaultValue={groupEditModal.group.teacherId}
+                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all border-gray-300"
+                  required
+                >
+                  <option value="">Seleccionar profesor</option>
+                  {teachers.map(teacher => (
+                    <option key={teacher.id} value={teacher.id}>
+                      {teacher.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Capacidad Máxima
+                </label>
+                <input
+                  type="number"
+                  name="maxStudents"
+                  defaultValue={groupEditModal.group.maxStudents}
+                  min="1"
+                  max="50"
+                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all border-gray-300"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setGroupEditModal({ isOpen: false })}
+                  className="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors font-medium"
+                >
+                  Guardar Cambios
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

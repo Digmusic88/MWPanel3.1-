@@ -391,10 +391,31 @@ export function SubjectsProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       setLoading(true);
       
+      // Create a deep copy of the subject to update
+      const subjectToUpdate = subjects.find(s => s.id === id);
+      if (!subjectToUpdate) {
+        throw new Error('Materia no encontrada');
+      }
+      
+      // Create the updated subject
+      const updatedSubject = { 
+        ...subjectToUpdate,
+        ...subjectData,
+        updatedAt: new Date()
+      };
+      
+      // If levels or groups are provided, use them directly
+      if (subjectData.levels) {
+        updatedSubject.levels = subjectData.levels;
+      }
+      
+      if (subjectData.groups) {
+        updatedSubject.groups = subjectData.groups;
+      }
+      
+      // Update the subjects array
       setSubjects(prev => prev.map(subject => 
-        subject.id === id 
-          ? { ...subject, ...subjectData, updatedAt: new Date() }
-          : subject
+        subject.id === id ? updatedSubject : subject
       ));
     } catch (err: any) {
       const errorMessage = err.message || 'Error al actualizar la materia';
@@ -413,7 +434,10 @@ export function SubjectsProvider({ children }: { children: React.ReactNode }) {
       // Verificar si hay estudiantes inscritos
       const subjectEnrollments = enrollments.filter(e => e.subjectId === id && e.status === 'active');
       if (subjectEnrollments.length > 0) {
-        throw new Error(`No se puede eliminar la materia. Hay ${subjectEnrollments.length} estudiante(s) inscrito(s)`);
+        // Instead of throwing an error, remove all enrollments first
+        for (const enrollment of subjectEnrollments) {
+          await removeStudent(enrollment.studentId, id, 'Materia eliminada');
+        }
       }
       
       setSubjects(prev => prev.filter(subject => subject.id !== id));
@@ -776,12 +800,25 @@ export function SubjectsProvider({ children }: { children: React.ReactNode }) {
   const updateGroup = async (subjectId: string, groupId: string, group: Partial<SubjectGroup>) => {
     setSubjects(prev => prev.map(subject => 
       subject.id === subjectId 
-        ? {
-            ...subject,
-            groups: subject.groups.map(g => 
-              g.id === groupId ? { ...g, ...group } : g
-            )
-          }
+        ? { 
+            ...subject, 
+            groups: subject.groups.map(g => {
+              if (g.id === groupId) {
+                const updatedGroup = { ...g, ...group };
+                
+                // If teacherId is updated, also update teacherName
+                if (group.teacherId && group.teacherId !== g.teacherId) {
+                  const teacher = getUsersByRole('teacher').find(t => t.id === group.teacherId);
+                  if (teacher) {
+                    updatedGroup.teacherName = teacher.name;
+                  }
+                }
+                
+                return updatedGroup;
+              }
+              return g;
+            })
+          } 
         : subject
     ));
   };
@@ -790,7 +827,10 @@ export function SubjectsProvider({ children }: { children: React.ReactNode }) {
     // Verificar si hay estudiantes en este grupo
     const groupEnrollments = enrollments.filter(e => e.groupId === groupId && e.status === 'active');
     if (groupEnrollments.length > 0) {
-      throw new Error(`No se puede eliminar el grupo. Hay ${groupEnrollments.length} estudiante(s) inscrito(s)`);
+      // Instead of throwing an error, remove all enrollments first
+      for (const enrollment of groupEnrollments) {
+        await removeStudent(enrollment.studentId, subjectId, 'Grupo eliminado');
+      }
     }
     
     setSubjects(prev => prev.map(subject => 

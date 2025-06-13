@@ -13,6 +13,7 @@ interface DroppableAreaProps {
   className?: string;
   onEditStudents?: () => void;
   onDeleteGroup?: () => void;
+  onEditGroup?: () => void;
 }
 
 export default function DroppableArea({
@@ -25,7 +26,8 @@ export default function DroppableArea({
   children,
   className = '',
   onEditStudents,
-  onDeleteGroup
+  onDeleteGroup,
+  onEditGroup
 }: DroppableAreaProps) {
   const {
     isOver,
@@ -83,6 +85,16 @@ export default function DroppableArea({
               title="Editar estudiantes del grupo"
             >
               <Edit className="w-4 h-4" />
+            </button>
+          )}
+          {/* Botón de editar grupo */}
+          {type === 'group' && onEditGroup && (
+            <button
+              onClick={onEditGroup}
+              className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all duration-200 transform hover:scale-110"
+              title="Editar grupo"
+            >
+              <Users className="w-4 h-4" />
             </button>
           )}
           {/* Botón de eliminar grupo */}
