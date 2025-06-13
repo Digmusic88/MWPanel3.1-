@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { Users, Trash2, Edit } from 'lucide-react';
+import { Users, Trash2, Edit, X } from 'lucide-react';
 
 interface DroppableAreaProps {
   subjectId: string;
@@ -12,6 +12,7 @@ interface DroppableAreaProps {
   children: React.ReactNode;
   className?: string;
   onEditStudents?: () => void;
+  onDeleteGroup?: () => void;
 }
 
 export default function DroppableArea({
@@ -23,7 +24,8 @@ export default function DroppableArea({
   type,
   children,
   className = '',
-  onEditStudents
+  onEditStudents,
+  onDeleteGroup
 }: DroppableAreaProps) {
   const {
     isOver,
@@ -81,6 +83,16 @@ export default function DroppableArea({
               title="Editar estudiantes del grupo"
             >
               <Edit className="w-4 h-4" />
+            </button>
+          )}
+          {/* Botón de eliminar grupo */}
+          {type === 'group' && onDeleteGroup && (
+            <button
+              onClick={onDeleteGroup}
+              className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-all duration-200 transform hover:scale-110"
+              title="Eliminar grupo"
+            >
+              <Trash2 className="w-4 h-4" />
             </button>
           )}
         </div>

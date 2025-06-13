@@ -107,6 +107,33 @@ export default function CursosMateriasPage() {
   const handleCloseLevelEdit = () => {
     setLevelEditModal({ isOpen: false });
   };
+
+  const handleDeleteGroup = async (subject: Subject, level: any, group: any) => {
+    const groupName = `${group.name} - ${group.teacherName || 'Sin profesor'}`;
+    
+    if (!window.confirm(`¿Estás seguro de que quieres eliminar el grupo "${groupName}"?\n\nEsta acción no se puede deshacer y se perderán todas las asignaciones de estudiantes.`)) {
+      return;
+    }
+
+    try {
+      // Primero remover todos los estudiantes del grupo
+      const groupEnrollments = getStudentEnrollments(subject.id).filter(
+        enrollment => enrollment.groupId === group.id && enrollment.status === 'active'
+      );
+
+      for (const enrollment of groupEnrollments) {
+        await removeStudent(enrollment.studentId, subject.id, 'Grupo eliminado');
+      }
+
+      // Luego eliminar el grupo usando deleteGroup del contexto
+      await deleteGroup(subject.id, group.id);
+      
+      showNotification('success', `Grupo "${groupName}" eliminado exitosamente`);
+    } catch (error: any) {
+      console.error('Error deleting group:', error);
+      showNotification('error', error.message || 'Error al eliminar el grupo');
+    }
+  };
   const handleSubjectSelect = (subjectId: string) => {
     if (!selectedSubjects.includes(subjectId)) {
       const newSelected = [...selectedSubjects, subjectId];
@@ -340,6 +367,7 @@ export default function CursosMateriasPage() {
                                 subtitle={`${group.currentStudents}/${group.maxStudents} estudiantes`}
                                 type="group"
                                 onEditStudents={() => handleEditStudents(activeSubject, level, group)}
+                                onDeleteGroup={() => handleDeleteGroup(activeSubject, level, group)}
                               >
                                 <div className="space-y-2">
                                   {getStudentEnrollments(activeSubject.id)
