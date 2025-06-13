@@ -24,6 +24,7 @@ export default function CursosMateriasPage() {
   const { 
     subjects, 
     enrollments, 
+    deleteGroup,
     addSubject,
     enrollStudent, 
     transferStudent, 
