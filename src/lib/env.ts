@@ -1,10 +1,10 @@
-// Environment configuration for Supabase
+// Configuración de variables de entorno para Supabase
 export const env = {
   SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL || '',
   SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
 } as const;
 
-// Validate environment variables
+// Validar que las variables de entorno estén configuradas
 export function validateEnv() {
   const missing = [];
   

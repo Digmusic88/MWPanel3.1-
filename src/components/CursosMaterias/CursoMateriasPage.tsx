@@ -64,7 +64,7 @@ export default function CursoMateriasPage() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [showArchived]);
+  }, []);
 
   // Auto-dismiss notification
   useEffect(() => {

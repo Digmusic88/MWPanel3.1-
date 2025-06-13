@@ -28,10 +28,6 @@ export class CursosMateriasService {
    */
   static async getAll(): Promise<CursoMateria[]> {
     try {
-      if (!supabase) {
-        throw new Error('Demo mode - no database connection');
-      }
-
       const { data, error } = await supabase
         .from('cursos_materias')
         .select('*')
@@ -54,10 +50,6 @@ export class CursosMateriasService {
    */
   static async getByCategoria(categoria: string): Promise<CursoMateria[]> {
     try {
-      if (!supabase) {
-        throw new Error('Demo mode - no database connection');
-      }
-
       const { data, error } = await supabase
         .from('cursos_materias')
         .select('*')
@@ -81,10 +73,6 @@ export class CursosMateriasService {
    */
   static async getActivos(): Promise<CursoMateria[]> {
     try {
-      if (!supabase) {
-        throw new Error('Demo mode - no database connection');
-      }
-
       const { data, error } = await supabase
         .from('cursos_materias')
         .select('*')
@@ -108,10 +96,6 @@ export class CursosMateriasService {
    */
   static async getArchivados(): Promise<CursoMateria[]> {
     try {
-      if (!supabase) {
-        throw new Error('Demo mode - no database connection');
-      }
-
       const { data, error } = await supabase
         .from('cursos_materias')
         .select('*')
@@ -135,10 +119,6 @@ export class CursosMateriasService {
    */
   static async create(curso: CreateCursoMateria): Promise<CursoMateria> {
     try {
-      if (!supabase) {
-        throw new Error('Demo mode - no database connection');
-      }
-
       const { data, error } = await supabase
         .from('cursos_materias')
         .insert([{
@@ -171,10 +151,6 @@ export class CursosMateriasService {
    */
   static async update(id: string, updates: UpdateCursoMateria): Promise<CursoMateria> {
     try {
-      if (!supabase) {
-        throw new Error('Demo mode - no database connection');
-      }
-
       const updateData: any = {};
       
       if (updates.nombre !== undefined) {
@@ -218,10 +194,6 @@ export class CursosMateriasService {
    */
   static async delete(id: string): Promise<void> {
     try {
-      if (!supabase) {
-        throw new Error('Demo mode - no database connection');
-      }
-
       const { error } = await supabase
         .from('cursos_materias')
         .delete()
@@ -256,10 +228,6 @@ export class CursosMateriasService {
    */
   static async search(query: string): Promise<CursoMateria[]> {
     try {
-      if (!supabase) {
-        throw new Error('Demo mode - no database connection');
-      }
-
       const { data, error } = await supabase
         .from('cursos_materias')
         .select('*')
@@ -310,15 +278,6 @@ export class CursosMateriasService {
    * Suscribirse a cambios en tiempo real
    */
   static subscribeToChanges(callback: (payload: any) => void) {
-    // Check if we're using the mock client
-    if (!supabase) {
-      console.log('Real-time subscriptions not available in demo mode');
-      // Return a mock subscription object
-      return {
-        unsubscribe: () => console.log('Mock subscription unsubscribed')
-      };
-    }
-
     const subscription = supabase
       .channel('cursos_materias_changes')
       .on(

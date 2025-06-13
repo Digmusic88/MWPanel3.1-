@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types';
-import { supabase, isSupabaseAvailable } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 
 // Demo users for development/testing
 const DEMO_USERS = {
@@ -133,12 +133,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check for existing session
     const checkSession = async () => {
       try {
-        // Only check Supabase session if Supabase is available
-        if (isSupabaseAvailable() && supabase) {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session?.user) {
-            await loadUserProfile(session.user.id);
-          }
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await loadUserProfile(session.user.id);
         }
       } catch (error) {
         console.error('Error checking session:', error);
@@ -149,34 +146,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     checkSession();
 
-    // Listen for auth changes only if Supabase is available
-    let subscription: { unsubscribe: () => void } | null = null;
-    
-    if (isSupabaseAvailable() && supabase) {
-      const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-          await loadUserProfile(session.user.id);
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-          localStorage.removeItem('edu_user');
-        }
-      });
-      subscription = authSubscription;
-    }
-
-    return () => {
-      if (subscription) {
-        subscription.unsubscribe();
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        await loadUserProfile(session.user.id);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        localStorage.removeItem('edu_user');
       }
-    };
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const loadUserProfile = async (authUserId: string) => {
-    // Only load profile from Supabase if it's available
-    if (!isSupabaseAvailable() || !supabase) {
-      return;
-    }
-
     try {
       const { data: userData, error: userError } = await supabase
         .from('users')
@@ -238,37 +221,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return true;
       }
 
-      // Try Supabase Auth for non-demo users only if Supabase is available
-      if (isSupabaseAvailable() && supabase) {
-        try {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password
-          });
+      // Try Supabase Auth for non-demo users
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
 
-          if (error) {
-            console.error('Supabase authentication error:', error);
-            setIsLoading(false);
-            return false;
-          }
-
-          if (!data.user) {
-            console.error('No user returned from Supabase authentication');
-            setIsLoading(false);
-            return false;
-          }
-
-          // User profile will be loaded by the auth state change listener
-          setIsLoading(false);
-          return true;
-        } catch (supabaseError) {
-          console.error('Supabase connection error:', supabaseError);
-          // Fall back to demo user check if Supabase is unavailable
+        if (error) {
+          console.error('Supabase authentication error:', error);
           setIsLoading(false);
           return false;
         }
-      } else {
-        // Supabase not available, only demo users can log in
+
+        if (!data.user) {
+          console.error('No user returned from Supabase authentication');
+          setIsLoading(false);
+          return false;
+        }
+
+        // User profile will be loaded by the auth state change listener
+        setIsLoading(false);
+        return true;
+      } catch (supabaseError) {
+        console.error('Supabase connection error:', supabaseError);
+        // Fall back to demo user check if Supabase is unavailable
         setIsLoading(false);
         return false;
       }
@@ -283,7 +260,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check if current user is a demo user
     const isDemoUser = user && user.email in DEMO_USERS;
     
-    if (!isDemoUser && isSupabaseAvailable() && supabase) {
+    if (!isDemoUser) {
       try {
         await supabase.auth.signOut();
       } catch (error) {
