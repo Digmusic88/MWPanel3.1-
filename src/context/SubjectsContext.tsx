@@ -809,3 +809,39 @@ export function SubjectsProvider({ children }: { children: React.ReactNode }) {
       addSubject,
       updateSubject,
       deleteSubject,
+      addLevel,
+      updateLevel,
+      deleteLevel,
+      addGroup,
+      updateGroup,
+      deleteGroup,
+      enrollStudent,
+      transferStudent,
+      removeStudent,
+      changeLevelStudent,
+      getSubjectById,
+      getEnrollmentsByStudent,
+      getEnrollmentsBySubject,
+      getAvailableGroups,
+      getSubjectStats,
+      searchSubjects,
+      filterSubjectsByDepartment
+    }}>
+      {children}
+    </SubjectsContext.Provider>
+  );
+}
+
+export function useSubjects() {
+  const context = useContext(SubjectsContext);
+  if (context === undefined) {
+    throw new Error('useSubjects debe ser usado dentro de un SubjectsProvider');
+  }
+  return context;
+}
+
+export { useSubjects }
+
+export { useSubjects }
+
+export { useSubjects }
