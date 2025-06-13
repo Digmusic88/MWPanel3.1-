@@ -7,6 +7,7 @@ import SubjectSidebar from './components/SubjectSidebar';
 import SubjectTabs from './components/SubjectTabs';
 import StudentCard from './components/StudentCard';
 import DroppableArea from './components/DroppableArea';
+import AddSubjectModal from './components/AddSubjectModal';
 import { Subject, StudentEnrollment } from '../../types/subjects';
 import { User } from '../../types';
 
@@ -21,6 +22,7 @@ export default function CursosMateriasPage() {
   const { 
     subjects, 
     enrollments, 
+    addSubject,
     enrollStudent, 
     transferStudent, 
     removeStudent, 
@@ -29,15 +31,21 @@ export default function CursosMateriasPage() {
     getAvailableGroups
   } = useSubjects();
   
-  const { getUsersByRole } = useUsers();
+  const { getUsersByRole, users } = useUsers();
   
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDragData, setActiveDragData] = useState<DragData | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const students = getUsersByRole('student');
+  const teachers = getUsersByRole('teacher').map(teacher => ({
+    id: teacher.id,
+    name: teacher.name,
+    email: teacher.email
+  }));
 
   // Auto-dismiss notifications
   useEffect(() => {
@@ -51,6 +59,15 @@ export default function CursosMateriasPage() {
     setNotification({ type, message });
   };
 
+  const handleAddSubject = async (subjectData: Omit<Subject, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      await addSubject(subjectData);
+      showNotification('success', 'Materia creada exitosamente');
+    } catch (error: any) {
+      console.error('Error creating subject:', error);
+      showNotification('error', error.message || 'Error al crear la materia');
+    }
+  };
   const handleSubjectSelect = (subjectId: string) => {
     if (!selectedSubjects.includes(subjectId)) {
       const newSelected = [...selectedSubjects, subjectId];
@@ -140,7 +157,10 @@ export default function CursosMateriasPage() {
             <p className="text-gray-600">Gestiona las asignaciones de estudiantes a materias y niveles</p>
           </div>
           <div className="flex items-center space-x-3">
-            <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <button 
+              onClick={() => setIsAddModalOpen(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
               <Plus className="w-4 h-4" />
               <span>Nueva Materia</span>
             </button>
@@ -343,6 +363,14 @@ export default function CursosMateriasPage() {
           </DragOverlay>
         </DndContext>
       </div>
+
+      {/* Add Subject Modal */}
+      <AddSubjectModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSubmit={handleAddSubject}
+        teachers={teachers}
+      />
     </div>
   );
 }
