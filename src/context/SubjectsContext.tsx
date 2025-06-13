@@ -839,9 +839,3 @@ export function useSubjects() {
   }
   return context;
 }
-
-export { useSubjects }
-
-export { useSubjects }
-
-export { useSubjects }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Users, BookOpen, GraduationCap, Filter, Edit, Trash2 } from 'lucide-react';
+import { Search, Plus, Users, BookOpen, GraduationCap, Filter, Edit } from 'lucide-react';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { useSubjects } from '../../context/SubjectsContext';
 import { useUsers } from '../../context/UsersContext';
@@ -25,7 +25,6 @@ export default function CursosMateriasPage() {
     subjects, 
     enrollments, 
     deleteGroup,
-    deleteLevel,
     addSubject,
     enrollStudent, 
     transferStudent, 
@@ -110,39 +109,6 @@ export default function CursosMateriasPage() {
     setLevelEditModal({ isOpen: false });
   };
 
-  const handleDeleteLevel = async (subject: Subject, level: any) => {
-    const levelName = level.name;
-    
-    if (!window.confirm(`¿Estás seguro de que quieres eliminar el nivel "${levelName}"?\n\nEsta acción eliminará también todos los grupos asociados y no se puede deshacer.`)) {
-      return;
-    }
-
-    try {
-      // Primero remover todos los estudiantes de los grupos de este nivel
-      const levelGroups = subject.groups.filter(group => group.levelId === level.id);
-      
-      for (const group of levelGroups) {
-        const groupEnrollments = getStudentEnrollments(subject.id).filter(
-          enrollment => enrollment.groupId === group.id && enrollment.status === 'active'
-        );
-
-        for (const enrollment of groupEnrollments) {
-          await removeStudent(enrollment.studentId, subject.id, 'Nivel eliminado');
-        }
-
-        // Eliminar el grupo
-        await deleteGroup(subject.id, group.id);
-      }
-
-      // Luego eliminar el nivel usando deleteLevel del contexto
-      await deleteLevel(subject.id, level.id);
-      
-      showNotification('success', `Nivel "${levelName}" eliminado exitosamente`);
-    } catch (error: any) {
-      console.error('Error deleting level:', error);
-      showNotification('error', error.message || 'Error al eliminar el nivel');
-    }
-  };
   const handleDeleteGroup = async (subject: Subject, level: any, group: any) => {
     const groupName = `${group.name} - ${group.teacherName || 'Sin profesor'}`;
     
@@ -151,7 +117,16 @@ export default function CursosMateriasPage() {
     }
 
     try {
-      // Eliminar el grupo (el contexto se encarga de remover los estudiantes automáticamente)
+      // Primero remover todos los estudiantes del grupo
+      const groupEnrollments = getStudentEnrollments(subject.id).filter(
+        enrollment => enrollment.groupId === group.id && enrollment.status === 'active'
+      );
+
+      for (const enrollment of groupEnrollments) {
+        await removeStudent(enrollment.studentId, subject.id, 'Grupo eliminado');
+      }
+
+      // Luego eliminar el grupo usando deleteGroup del contexto
       await deleteGroup(subject.id, group.id);
       
       showNotification('success', `Grupo "${groupName}" eliminado exitosamente`);
@@ -377,13 +352,6 @@ export default function CursosMateriasPage() {
                             title="Editar nivel"
                           >
                             <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteLevel(activeSubject, level)}
-                            className="ml-2 p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-all duration-200 transform hover:scale-110"
-                            title="Eliminar nivel"
-                          >
-                            <Trash2 className="w-4 h-4" />
                           </button>
                         </h3>
                         
