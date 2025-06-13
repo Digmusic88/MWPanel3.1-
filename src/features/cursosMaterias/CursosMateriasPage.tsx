@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Users, BookOpen, GraduationCap, Filter } from 'lucide-react';
+import { Search, Plus, Users, BookOpen, GraduationCap, Filter, Edit } from 'lucide-react';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { useSubjects } from '../../context/SubjectsContext';
 import { useUsers } from '../../context/UsersContext';
@@ -9,6 +9,7 @@ import StudentCard from './components/StudentCard';
 import DroppableArea from './components/DroppableArea';
 import AddSubjectModal from './components/AddSubjectModal';
 import StudentManagementModal from './components/StudentManagementModal';
+import LevelEditModal from './components/LevelEditModal';
 import { Subject, StudentEnrollment } from '../../types/subjects';
 import { User } from '../../types';
 
@@ -28,6 +29,7 @@ export default function CursosMateriasPage() {
     transferStudent, 
     removeStudent, 
     changeLevelStudent,
+    updateLevel,
     getEnrollmentsBySubject,
     getAvailableGroups
   } = useSubjects();
@@ -45,6 +47,11 @@ export default function CursosMateriasPage() {
     subject?: Subject;
     level?: any;
     group?: any;
+  }>({ isOpen: false });
+  const [levelEditModal, setLevelEditModal] = useState<{
+    isOpen: boolean;
+    subject?: Subject;
+    level?: any;
   }>({ isOpen: false });
 
   const students = getUsersByRole('student');
@@ -87,6 +94,18 @@ export default function CursosMateriasPage() {
 
   const handleCloseStudentManagement = () => {
     setStudentManagementModal({ isOpen: false });
+  };
+
+  const handleEditLevel = (subject: Subject, level: any) => {
+    setLevelEditModal({
+      isOpen: true,
+      subject,
+      level
+    });
+  };
+
+  const handleCloseLevelEdit = () => {
+    setLevelEditModal({ isOpen: false });
   };
   const handleSubjectSelect = (subjectId: string) => {
     if (!selectedSubjects.includes(subjectId)) {
@@ -145,6 +164,19 @@ export default function CursosMateriasPage() {
     } catch (error: any) {
       console.error('Error in drag and drop:', error);
       showNotification('error', error.message || 'Error al procesar la acción');
+    }
+  };
+
+  const handleSaveLevel = async (levelData: any) => {
+    if (!levelEditModal.subject || !levelEditModal.level) return;
+
+    try {
+      await updateLevel(levelEditModal.subject.id, levelEditModal.level.id, levelData);
+      showNotification('success', 'Nivel actualizado exitosamente');
+      setLevelEditModal({ isOpen: false });
+    } catch (error: any) {
+      console.error('Error updating level:', error);
+      showNotification('error', error.message || 'Error al actualizar el nivel');
     }
   };
 
@@ -286,6 +318,13 @@ export default function CursosMateriasPage() {
                           <GraduationCap className="w-5 h-5 mr-2 text-blue-600" />
                           {level.name}
                           <span className="ml-2 text-sm text-gray-500">({level.currentStudents}/{level.maxStudents})</span>
+                          <button
+                            onClick={() => handleEditLevel(activeSubject, level)}
+                            className="ml-auto p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all duration-200 transform hover:scale-110"
+                            title="Editar nivel"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
                         </h3>
                         
                         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -405,6 +444,16 @@ export default function CursosMateriasPage() {
             // Trigger a refresh of the data if needed
             showNotification('success', 'Estudiantes actualizados');
           }}
+        />
+      )}
+
+      {/* Level Edit Modal */}
+      {levelEditModal.isOpen && levelEditModal.subject && levelEditModal.level && (
+        <LevelEditModal
+          isOpen={levelEditModal.isOpen}
+          onClose={handleCloseLevelEdit}
+          level={levelEditModal.level}
+          onSave={handleSaveLevel}
         />
       )}
     </div>
