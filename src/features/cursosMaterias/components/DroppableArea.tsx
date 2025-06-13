@@ -73,6 +73,7 @@ export default function DroppableArea({
               {subtitle}
             </span>
           )}
+          {/* Mostrar botón de editar para todos los grupos, incluso vacíos */}
           {type === 'group' && onEditStudents && (
             <button
               onClick={onEditStudents}
