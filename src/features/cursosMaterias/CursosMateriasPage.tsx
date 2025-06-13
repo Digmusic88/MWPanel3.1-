@@ -151,16 +151,7 @@ export default function CursosMateriasPage() {
     }
 
     try {
-      // Primero remover todos los estudiantes del grupo
-      const groupEnrollments = getStudentEnrollments(subject.id).filter(
-        enrollment => enrollment.groupId === group.id && enrollment.status === 'active'
-      );
-
-      for (const enrollment of groupEnrollments) {
-        await removeStudent(enrollment.studentId, subject.id, 'Grupo eliminado');
-      }
-
-      // Luego eliminar el grupo usando deleteGroup del contexto
+      // Eliminar el grupo (el contexto se encarga de remover los estudiantes automáticamente)
       await deleteGroup(subject.id, group.id);
       
       showNotification('success', `Grupo "${groupName}" eliminado exitosamente`);
