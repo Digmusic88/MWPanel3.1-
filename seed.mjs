@@ -1,16 +1,34 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Configuración de Supabase
-const supabaseUrl = process.env.VITE_SUPABASE_URL || 'your-supabase-url';
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || 'your-supabase-anon-key';
+// Load environment variables
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('❌ Error: Missing environment variables');
+  console.log('Please ensure you have the following in your .env file:');
+  console.log('- VITE_SUPABASE_URL');
+  console.log('- VITE_SUPABASE_ANON_KEY');
+  process.exit(1);
+}
 
-// Datos de ejemplo para poblar la base de datos
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Seed data for cursos_materias
 const cursosData = [
   {
     nombre: 'Matemáticas Avanzadas',
     descripcion: 'Curso completo de matemáticas para nivel avanzado incluyendo cálculo, álgebra y geometría analítica',
+    categoria: 'Ciencias'
+  },
+  {
+    nombre: 'Álgebra Lineal',
+    descripcion: 'Fundamentos de álgebra lineal, matrices, vectores y transformaciones lineales',
+    categoria: 'Ciencias'
+  },
+  {
+    nombre: 'Cálculo Diferencial e Integral',
+    descripcion: 'Introducción al cálculo diferencial e integral con aplicaciones prácticas',
     categoria: 'Ciencias'
   },
   {
@@ -39,6 +57,11 @@ const cursosData = [
     categoria: 'Humanidades'
   },
   {
+    nombre: 'Arte y Cultura',
+    descripcion: 'Exploración de las manifestaciones artísticas y culturales a través de la historia',
+    categoria: 'Humanidades'
+  },
+  {
     nombre: 'Programación Web Full Stack',
     descripcion: 'Desarrollo completo de aplicaciones web modernas con tecnologías actuales',
     categoria: 'Tecnología'
@@ -54,6 +77,11 @@ const cursosData = [
     categoria: 'Tecnología'
   },
   {
+    nombre: 'Desarrollo de Aplicaciones Móviles',
+    descripcion: 'Creación de aplicaciones nativas y multiplataforma para dispositivos móviles',
+    categoria: 'Tecnología'
+  },
+  {
     nombre: 'Economía Global',
     descripcion: 'Análisis de los sistemas económicos mundiales y sus interconexiones',
     categoria: 'Ciencias Sociales'
@@ -62,11 +90,6 @@ const cursosData = [
     nombre: 'Psicología del Desarrollo',
     descripcion: 'Estudio del desarrollo humano desde la infancia hasta la edad adulta',
     categoria: 'Ciencias Sociales'
-  },
-  {
-    nombre: 'Arte Contemporáneo',
-    descripcion: 'Exploración de las corrientes artísticas del siglo XX y XXI',
-    categoria: 'Artes'
   }
 ];
 
@@ -82,6 +105,11 @@ async function seedDatabase() {
 
     if (testError) {
       console.error('❌ Error de conexión a Supabase:', testError.message);
+      console.log('');
+      console.log('Verifica que:');
+      console.log('1. Las variables de entorno estén configuradas correctamente');
+      console.log('2. La tabla cursos_materias exista en tu base de datos');
+      console.log('3. Las políticas RLS permitan insertar datos');
       return;
     }
 
@@ -107,6 +135,13 @@ async function seedDatabase() {
 
     if (error) {
       console.error('❌ Error al insertar datos:', error.message);
+      console.log('');
+      console.log('Posibles causas:');
+      console.log('1. Políticas RLS muy restrictivas');
+      console.log('2. Tabla no existe o tiene estructura diferente');
+      console.log('3. Permisos insuficientes');
+      console.log('');
+      console.log('Puedes ejecutar el script fixSupabaseWarnings.mjs para simplificar las políticas RLS');
       return;
     }
 
@@ -122,13 +157,14 @@ async function seedDatabase() {
       console.log(`   📖 ${categoria}: ${count} cursos`);
     });
 
-    console.log('\n🎉 Seed completado exitosamente!');
-    console.log('💡 Ahora puedes usar la aplicación con datos reales de Supabase');
+    console.log('');
+    console.log('🎉 ¡Seed completado exitosamente!');
+    console.log('Ahora puedes abrir la sección "Cursos y Materias" en la aplicación');
 
   } catch (error) {
-    console.error('💥 Error inesperado:', error);
+    console.error('❌ Error inesperado:', error.message);
   }
 }
 
-// Ejecutar el seed
+// Ejecutar seed
 seedDatabase();
