@@ -9,13 +9,13 @@ export interface CursoMateria {
   creado_en: string;
 }
 
-export interface CreateCursoMateria {
+interface CreateCursoMateria {
   nombre: string;
   descripcion?: string;
   categoria: string;
 }
 
-export interface UpdateCursoMateria {
+interface UpdateCursoMateria {
   nombre?: string;
   descripcion?: string;
   categoria?: string;

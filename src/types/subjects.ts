@@ -70,7 +70,7 @@ export interface SubjectStats {
   enrollmentsByLevel: Record<string, number>;
 }
 
-export interface DragDropData {
+interface DragDropData {
   studentId: string;
   sourceSubjectId: string;
   sourceLevelId: string;
