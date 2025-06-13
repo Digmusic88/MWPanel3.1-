@@ -787,18 +787,57 @@ export function SubjectsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteGroup = async (subjectId: string, groupId: string) => {
-    // Remover todos los estudiantes del grupo antes de eliminarlo
+    // Verificar si hay estudiantes en este grupo
     const groupEnrollments = enrollments.filter(e => e.groupId === groupId && e.status === 'active');
-    
     if (groupEnrollments.length > 0) {
-      // Marcar todas las inscripciones como inactivas
-      setEnrollments(prev => prev.map(enrollment => 
-        enrollment.groupId === groupId && enrollment.status === 'active'
-          ? { ...enrollment, status: 'dropped' as const, notes: 'Grupo eliminado' }
-          : enrollment
-      ));
-      
-      // Actualizar contadores de nivel
-      const firstEnrollment = groupEnrollments[0];
-      if (firstEnrollment) {
-        updateLevelStudentCount(subjectId, firstEnrollment.levelId, -groupEnrollments
+      throw new Error(`No se puede eliminar el grupo. Hay ${groupEnrollments.length} estudiante(s) inscrito(s)`);
+    }
+    
+    setSubjects(prev => prev.map(subject => 
+      subject.id === subjectId 
+        ? { ...subject, groups: subject.groups.filter(g => g.id !== groupId) }
+        : subject
+    ));
+  };
+
+  return (
+    <SubjectsContext.Provider value={{
+      subjects,
+      enrollments,
+      loading,
+      error,
+      addSubject,
+      updateSubject,
+      deleteSubject,
+      addLevel,
+      updateLevel,
+      deleteLevel,
+      addGroup,
+      updateGroup,
+      deleteGroup,
+      enrollStudent,
+      transferStudent,
+      removeStudent,
+      changeLevelStudent,
+      getSubjectById,
+      getEnrollmentsByStudent,
+      getEnrollmentsBySubject,
+      getAvailableGroups,
+      getSubjectStats,
+      searchSubjects,
+      filterSubjectsByDepartment
+    }}>
+      {children}
+    </SubjectsContext.Provider>
+  );
+}
+
+export function useSubjects() {
+  const context = useContext(SubjectsContext);
+  if (context === undefined) {
+    throw new Error('useSubjects debe ser usado dentro de un SubjectsProvider');
+  }
+  return context;
+}
+
+export { useSubjects }
