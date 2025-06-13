@@ -22,11 +22,52 @@ export interface UpdateCursoMateria {
   archivado?: boolean;
 }
 
+// Mock data for demo mode
+const mockCursos: CursoMateria[] = [
+  {
+    id: '1',
+    nombre: 'Matemáticas Básicas',
+    descripcion: 'Curso introductorio de matemáticas',
+    categoria: 'Matemáticas',
+    archivado: false,
+    creado_en: new Date().toISOString()
+  },
+  {
+    id: '2',
+    nombre: 'Historia Universal',
+    descripcion: 'Estudio de la historia mundial',
+    categoria: 'Historia',
+    archivado: false,
+    creado_en: new Date().toISOString()
+  },
+  {
+    id: '3',
+    nombre: 'Química Avanzada',
+    descripcion: 'Curso avanzado de química',
+    categoria: 'Ciencias',
+    archivado: true,
+    creado_en: new Date().toISOString()
+  }
+];
+
+let mockData = [...mockCursos];
+
 export class CursosMateriasService {
+  /**
+   * Check if running in mock mode
+   */
+  private static isMockMode(): boolean {
+    return (supabase as any).isMock === true;
+  }
+
   /**
    * Obtener todos los cursos y materias
    */
   static async getAll(): Promise<CursoMateria[]> {
+    if (this.isMockMode()) {
+      return [...mockData].sort((a, b) => new Date(b.creado_en).getTime() - new Date(a.creado_en).getTime());
+    }
+
     try {
       const { data, error } = await supabase
         .from('cursos_materias')
@@ -49,6 +90,12 @@ export class CursosMateriasService {
    * Obtener cursos por categoría
    */
   static async getByCategoria(categoria: string): Promise<CursoMateria[]> {
+    if (this.isMockMode()) {
+      return mockData
+        .filter(curso => curso.categoria === categoria)
+        .sort((a, b) => new Date(b.creado_en).getTime() - new Date(a.creado_en).getTime());
+    }
+
     try {
       const { data, error } = await supabase
         .from('cursos_materias')
@@ -72,6 +119,12 @@ export class CursosMateriasService {
    * Obtener cursos activos (no archivados)
    */
   static async getActivos(): Promise<CursoMateria[]> {
+    if (this.isMockMode()) {
+      return mockData
+        .filter(curso => !curso.archivado)
+        .sort((a, b) => new Date(b.creado_en).getTime() - new Date(a.creado_en).getTime());
+    }
+
     try {
       const { data, error } = await supabase
         .from('cursos_materias')
@@ -95,6 +148,12 @@ export class CursosMateriasService {
    * Obtener cursos archivados
    */
   static async getArchivados(): Promise<CursoMateria[]> {
+    if (this.isMockMode()) {
+      return mockData
+        .filter(curso => curso.archivado)
+        .sort((a, b) => new Date(b.creado_en).getTime() - new Date(a.creado_en).getTime());
+    }
+
     try {
       const { data, error } = await supabase
         .from('cursos_materias')
@@ -118,6 +177,19 @@ export class CursosMateriasService {
    * Crear un nuevo curso
    */
   static async create(curso: CreateCursoMateria): Promise<CursoMateria> {
+    if (this.isMockMode()) {
+      const newCurso: CursoMateria = {
+        id: Date.now().toString(),
+        nombre: curso.nombre.trim(),
+        descripcion: curso.descripcion?.trim() || null,
+        categoria: curso.categoria,
+        archivado: false,
+        creado_en: new Date().toISOString()
+      };
+      mockData.push(newCurso);
+      return newCurso;
+    }
+
     try {
       const { data, error } = await supabase
         .from('cursos_materias')
@@ -150,6 +222,31 @@ export class CursosMateriasService {
    * Actualizar un curso existente
    */
   static async update(id: string, updates: UpdateCursoMateria): Promise<CursoMateria> {
+    if (this.isMockMode()) {
+      const index = mockData.findIndex(curso => curso.id === id);
+      if (index === -1) {
+        throw new Error('Curso no encontrado');
+      }
+
+      const updatedCurso = { ...mockData[index] };
+      
+      if (updates.nombre !== undefined) {
+        updatedCurso.nombre = updates.nombre.trim();
+      }
+      if (updates.descripcion !== undefined) {
+        updatedCurso.descripcion = updates.descripcion?.trim() || null;
+      }
+      if (updates.categoria !== undefined) {
+        updatedCurso.categoria = updates.categoria;
+      }
+      if (updates.archivado !== undefined) {
+        updatedCurso.archivado = updates.archivado;
+      }
+
+      mockData[index] = updatedCurso;
+      return updatedCurso;
+    }
+
     try {
       const updateData: any = {};
       
@@ -193,6 +290,15 @@ export class CursosMateriasService {
    * Eliminar un curso permanentemente
    */
   static async delete(id: string): Promise<void> {
+    if (this.isMockMode()) {
+      const index = mockData.findIndex(curso => curso.id === id);
+      if (index === -1) {
+        throw new Error('Curso no encontrado');
+      }
+      mockData.splice(index, 1);
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('cursos_materias')
@@ -227,6 +333,16 @@ export class CursosMateriasService {
    * Buscar cursos por nombre
    */
   static async search(query: string): Promise<CursoMateria[]> {
+    if (this.isMockMode()) {
+      const lowerQuery = query.toLowerCase();
+      return mockData
+        .filter(curso => 
+          curso.nombre.toLowerCase().includes(lowerQuery) ||
+          (curso.descripcion && curso.descripcion.toLowerCase().includes(lowerQuery))
+        )
+        .sort((a, b) => new Date(b.creado_en).getTime() - new Date(a.creado_en).getTime());
+    }
+
     try {
       const { data, error } = await supabase
         .from('cursos_materias')
@@ -250,6 +366,24 @@ export class CursosMateriasService {
    * Obtener estadísticas de cursos
    */
   static async getEstadisticas() {
+    if (this.isMockMode()) {
+      const todos = mockData;
+      const activos = mockData.filter(curso => !curso.archivado);
+      const archivados = mockData.filter(curso => curso.archivado);
+
+      const categorias = todos.reduce((acc, curso) => {
+        acc[curso.categoria] = (acc[curso.categoria] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      return {
+        total: todos.length,
+        activos: activos.length,
+        archivados: archivados.length,
+        categorias
+      };
+    }
+
     try {
       const [todos, activos, archivados] = await Promise.all([
         this.getAll(),
@@ -278,6 +412,15 @@ export class CursosMateriasService {
    * Suscribirse a cambios en tiempo real
    */
   static subscribeToChanges(callback: (payload: any) => void) {
+    if (this.isMockMode()) {
+      // Return a mock subscription object with an unsubscribe method
+      return {
+        unsubscribe: () => {
+          console.log('Mock subscription unsubscribed');
+        }
+      };
+    }
+
     const subscription = supabase
       .channel('cursos_materias_changes')
       .on(
