@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseAvailable } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 
 // Demo users for development/testing - synchronized with AuthContext
@@ -192,8 +192,8 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       setError(null);
 
-      // Check if we're using the mock client
-      if ((supabase as any).isMock) {
+      // Check if Supabase is available and properly initialized
+      if (!isSupabaseAvailable() || (supabase as any)?.isMock) {
         // Use demo data when in mock mode
         setUsers(DEMO_USERS);
         setLoading(false);
@@ -266,7 +266,7 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
       };
 
       // Check if we're using the mock client or if it's a demo user
-      if ((supabase as any).isMock || isDemoUser(newUser.id)) {
+      if (!isSupabaseAvailable() || (supabase as any)?.isMock || isDemoUser(newUser.id)) {
         // Skip Supabase operations in mock mode or for demo users, use local creation only
         setUsers(prev => [newUser, ...prev]);
         return;
@@ -336,7 +336,7 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Check if we're using the mock client
-      if ((supabase as any).isMock) {
+      if (!isSupabaseAvailable() || (supabase as any)?.isMock) {
         // Skip Supabase operations in mock mode, use local update only
         setUsers(prev => prev.map(user => 
           user.id === id ? { ...user, ...userData } : user
@@ -410,7 +410,7 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Check if we're using the mock client
-      if ((supabase as any).isMock) {
+      if (!isSupabaseAvailable() || (supabase as any)?.isMock) {
         // Skip Supabase operations in mock mode, use local deletion only
         setUsers(prev => prev.filter(user => user.id !== id));
         return;
@@ -464,7 +464,7 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Check if we're using the mock client
-      if ((supabase as any).isMock) {
+      if (!isSupabaseAvailable() || (supabase as any)?.isMock) {
         // Skip Supabase operations in mock mode, use local toggle only
         setUsers(prev => prev.map(u => 
           u.id === id ? { ...u, isActive: !u.isActive } : u
@@ -563,7 +563,7 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       
       // For demo users or when Supabase is not available, handle locally
-      if (isDemoUser(parentId) || isDemoUser(studentId) || (supabase as any).isMock) {
+      if (isDemoUser(parentId) || isDemoUser(studentId) || !isSupabaseAvailable() || (supabase as any)?.isMock) {
         // Update parent to include student in children array
         setUsers(prev => prev.map(user => {
           if (user.id === parentId && user.role === 'parent') {
@@ -618,7 +618,7 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       
       // For demo users or when Supabase is not available, handle locally
-      if (isDemoUser(parentId) || isDemoUser(studentId) || (supabase as any).isMock) {
+      if (isDemoUser(parentId) || isDemoUser(studentId) || !isSupabaseAvailable() || (supabase as any)?.isMock) {
         // Update parent to remove student from children array
         setUsers(prev => prev.map(user => {
           if (user.id === parentId && user.role === 'parent') {
