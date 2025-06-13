@@ -83,7 +83,6 @@ export default function DroppableArea({
             </button>
           )}
         </div>
-        )}
       </div>
 
       {/* Content */}
