@@ -14,19 +14,32 @@ interface UserModalProps {
 export default function UserModal({ isOpen, onClose, onSave, user, mode }: UserModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Evitar cerrar el modal si hay un error durante el guardado
+  const [hasError, setHasError] = useState(false);
+
   /**
    * Maneja el envío del formulario
    */
   const handleFormSubmit = async (userData: Omit<UserType, 'id' | 'createdAt'>) => {
     setIsSubmitting(true);
+    setHasError(false);
+    
     try {
       await onSave(userData);
       onClose();
     } catch (error) {
       console.error('Error saving user:', error);
+      setHasError(true);
       throw error; // Re-throw para que UserForm pueda manejar el error
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Función para cerrar el modal solo si no hay errores o si se fuerza el cierre
+  const handleClose = () => {
+    if (!isSubmitting) {
+      onClose();
     }
   };
 
@@ -41,7 +54,7 @@ export default function UserModal({ isOpen, onClose, onSave, user, mode }: UserM
             {mode === 'create' ? 'Crear Nuevo Usuario' : 'Editar Usuario'}
           </h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             disabled={isSubmitting}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
@@ -55,7 +68,7 @@ export default function UserModal({ isOpen, onClose, onSave, user, mode }: UserM
             user={user}
             mode={mode}
             onSubmit={handleFormSubmit}
-            onCancel={onClose}
+            onCancel={handleClose}
             isSubmitting={isSubmitting}
           />
         </div>

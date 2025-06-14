@@ -206,6 +206,7 @@ export default function UserForm({
     e.preventDefault();
     
     if (!validateForm()) {
+      // Mantener los datos actuales en caso de error de validación
       return;
     }
 
@@ -228,6 +229,7 @@ export default function UserForm({
     } catch (error) {
       console.error('Error saving user:', error);
       setErrors({ general: 'Error al guardar el usuario. Por favor, intenta de nuevo.' });
+      // No resetear el formulario en caso de error
     }
   };
 
