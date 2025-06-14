@@ -221,6 +221,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return true;
       }
 
+      // If it's not a demo user and password is 'demo123', show better error
+      if (password === 'demo123' && !(email in DEMO_USERS)) {
+        console.log('Attempted demo login with non-demo email:', email);
+        setIsLoading(false);
+        return false;
+      }
+
       // Try Supabase Auth for non-demo users
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -229,7 +236,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (error) {
-          console.error('Supabase authentication error:', error);
+          console.log('Supabase authentication failed for:', email, '- This is expected for demo users');
           setIsLoading(false);
           return false;
         }
@@ -244,7 +251,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
         return true;
       } catch (supabaseError) {
-        console.error('Supabase connection error:', supabaseError);
+        console.log('Supabase connection error - falling back to demo mode:', supabaseError);
         // Fall back to demo user check if Supabase is unavailable
         setIsLoading(false);
         return false;

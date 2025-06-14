@@ -72,6 +72,13 @@ export default function StudentManagementModal({
       setIsProcessing(true);
       
       for (const studentId of selectedStudents) {
+        // Double-check that student is not already enrolled before attempting enrollment
+        const currentEnrollments = getEnrollmentsBySubject(subject.id).filter(
+          e => e.studentId === studentId && e.groupId === group.id && e.status === 'active'
+        );
+        if (currentEnrollments.length > 0) {
+          continue; // Skip this student as they're already enrolled
+        }
         await enrollStudent(studentId, subject.id, level.id, group.id, 'Inscripción manual desde modal de gestión');
       }
       
@@ -105,6 +112,11 @@ export default function StudentManagementModal({
   };
 
   const toggleStudentSelection = (studentId: string) => {
+    // Prevent selection of already enrolled students
+    if (enrolledStudentIds.includes(studentId)) {
+      return;
+    }
+    
     setSelectedStudents(prev => 
       prev.includes(studentId) 
         ? prev.filter(id => id !== studentId)
@@ -114,8 +126,10 @@ export default function StudentManagementModal({
 
   const selectAllVisible = () => {
     const visibleStudents = filteredAvailableStudents.map(s => s.id);
+    // Filter out any students that might already be enrolled
+    const trulyAvailable = visibleStudents.filter(id => !enrolledStudentIds.includes(id));
     const remainingCapacity = group.maxStudents - group.currentStudents;
-    const toSelect = visibleStudents.slice(0, remainingCapacity);
+    const toSelect = trulyAvailable.slice(0, remainingCapacity);
     setSelectedStudents(toSelect);
   };
 

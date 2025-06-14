@@ -21,7 +21,12 @@ export default function LoginPage() {
 
     const success = await login(email, password);
     if (!success) {
-      setError('Credenciales inválidas. Por favor, inténtalo de nuevo.');
+      // Check if it's a demo account attempt
+      if (password === 'demo123') {
+        setError('Cuenta de demostración no encontrada. Usa una de las cuentas de demostración disponibles abajo.');
+      } else {
+        setError('Credenciales inválidas. Por favor, inténtalo de nuevo o usa una cuenta de demostración.');
+      }
     }
     
     setIsSubmitting(false);
