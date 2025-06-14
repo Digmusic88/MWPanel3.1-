@@ -257,10 +257,13 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
     try {
       setError(null);
       
+      // Extraer la contraseña para manejarla por separado
+      const { password, ...userDataWithoutPassword } = userData;
+      
       // Create new user with generated ID
       const newUser: User = {
         id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        ...userData,
+        ...userDataWithoutPassword,
         createdAt: new Date(),
         lastLogin: undefined
       };
@@ -276,10 +279,36 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
       if (currentUser && currentUser.role === 'admin') {
         try {
           const dbData = {
-            ...userToDbRow(userData),
+            ...userToDbRow(userDataWithoutPassword),
             id: newUser.id,
             createdAt: new Date().toISOString(),
           };
+          
+          // Si hay contraseña, intentar crear el usuario en auth
+          if (password) {
+            try {
+              // Esto solo funcionaría en un entorno real con Supabase
+              // En modo demo, simplemente ignoramos este paso
+              if (!(supabase as any).isMock) {
+                const { error: signUpError } = await supabase.auth.signUp({
+                  email: userData.email,
+                  password: password,
+                  options: {
+                    data: {
+                      role: userData.role,
+                      name: userData.name
+                    }
+                  }
+                });
+                
+                if (signUpError) {
+                  console.log('Error creating auth user (expected in demo mode):', signUpError);
+                }
+              }
+            } catch (authError) {
+              console.log('Auth error (expected in demo mode):', authError);
+            }
+          }
           
           const { data, error: supabaseError } = await supabase
             .from('users')

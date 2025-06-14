@@ -30,6 +30,7 @@ interface UserFormProps {
 interface FormData {
   name: string;
   email: string;
+  password: string;
   role: UserType['role'];
   phone: string;
   avatar: string;
@@ -84,6 +85,7 @@ export default function UserForm({
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
+    password: '',
     role: 'student',
     phone: '',
     avatar: '',
@@ -108,6 +110,7 @@ export default function UserForm({
       setFormData({
         name: user.name,
         email: user.email,
+        password: '',
         role: user.role,
         phone: user.phone || '',
         avatar: user.avatar || '',
@@ -120,6 +123,7 @@ export default function UserForm({
       setFormData({
         name: '',
         email: '',
+        password: '',
         role: 'student',
         phone: '',
         avatar: '',
@@ -172,6 +176,13 @@ export default function UserForm({
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'El email no es válido';
     }
+    
+    // Validación de contraseña (solo en modo creación)
+    if (mode === 'create' && !formData.password.trim()) {
+      newErrors.password = 'La contraseña temporal es obligatoria';
+    } else if (mode === 'create' && formData.password.length < 6) {
+      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+    }
 
     // Validación específica por rol
     if (formData.role === 'student' && !formData.grade) {
@@ -201,6 +212,7 @@ export default function UserForm({
       const userData: Omit<UserType, 'id' | 'createdAt'> = {
         name: formData.name.trim(),
         email: formData.email.trim(),
+        password: formData.password.trim(),
         role: formData.role,
         phone: formData.phone.trim() || undefined,
         avatar: formData.avatar || undefined,
@@ -317,6 +329,29 @@ export default function UserForm({
           />
           {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
         </div>
+
+        {/* Contraseña Temporal (solo en modo creación) */}
+        {mode === 'create' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Contraseña Temporal *
+            </label>
+            <input
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
+                errors.password ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Contraseña temporal para el primer acceso"
+              disabled={isLoading}
+            />
+            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+            <p className="text-xs text-gray-500 mt-1">
+              El usuario podrá cambiar esta contraseña después de iniciar sesión
+            </p>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

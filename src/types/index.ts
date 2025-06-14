@@ -2,6 +2,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  password?: string; // Solo usado durante la creación, nunca almacenado en estado
   role: 'admin' | 'teacher' | 'student' | 'parent';
   avatar?: string;
   phone?: string;
