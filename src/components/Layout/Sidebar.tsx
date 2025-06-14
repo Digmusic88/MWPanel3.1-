@@ -26,7 +26,6 @@ const navigationItems = {
   admin: [
     { icon: LayoutDashboard, label: 'Panel Principal', path: '/admin' },
     { icon: Users, label: 'Gestión de Usuarios', path: '/admin/users' },
-    { icon: BookOpen, label: 'Cursos y Materias', path: '/admin/courses' },
     { icon: Layers, label: 'Asignaciones', path: '/admin/cursos-materias' },
     { icon: Layers, label: 'Panel Unificado', path: '/admin/unified' },
     { icon: TrendingUp, label: 'Reportes y Análisis', path: '/admin/reports' },
