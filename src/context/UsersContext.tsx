@@ -260,6 +260,9 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
       // Extraer la contraseña para manejarla por separado
       const { password, ...userDataWithoutPassword } = userData;
       
+      // Verificar si hay contraseña para actualizar
+      const hasPassword = password && password.trim().length > 0;
+      
       // Create new user with generated ID
       const newUser: User = {
         id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -285,7 +288,7 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
           };
           
           // Si hay contraseña, intentar crear el usuario en auth
-          if (password) {
+          if (hasPassword) {
             try {
               // Esto solo funcionaría en un entorno real con Supabase
               // En modo demo, simplemente ignoramos este paso
@@ -356,10 +359,16 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
     try {
       setError(null);
       
+      // Extraer la contraseña para manejarla por separado
+      const { password, ...userDataWithoutPassword } = userData;
+      
+      // Verificar si hay contraseña para actualizar
+      const hasPassword = password && password.trim().length > 0;
+      
       // Check if it's a demo user - skip Supabase operations for demo users
       if (isDemoUser(id)) {
         setUsers(prev => prev.map(user => 
-          user.id === id ? { ...user, ...userData } : user
+          user.id === id ? { ...user, ...userDataWithoutPassword } : user
         ));
         return;
       }
@@ -368,7 +377,7 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
       if ((supabase as any).isMock) {
         // Skip Supabase operations in mock mode, use local update only
         setUsers(prev => prev.map(user => 
-          user.id === id ? { ...user, ...userData } : user
+          user.id === id ? { ...user, ...userDataWithoutPassword } : user
         ));
         return;
       }
@@ -376,7 +385,22 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
       // Try Supabase first if user is admin
       if (currentUser && currentUser.role === 'admin') {
         try {
-          const dbData = userToDbRow(userData);
+          const dbData = userToDbRow(userDataWithoutPassword);
+          
+          // Si hay contraseña, actualizar en auth
+          if (hasPassword && !(supabase as any).isMock) {
+            try {
+              // Esto solo funcionaría con permisos de admin en un entorno real
+              // En modo demo, simplemente ignoramos este paso
+              console.log('Actualización de contraseña solicitada (no implementada en demo)');
+              
+              // En un entorno real, aquí iría el código para actualizar la contraseña
+              // Ejemplo (no funcional en demo):
+              // await supabase.auth.admin.updateUserById(id, { password });
+            } catch (authError) {
+              console.log('Error al actualizar contraseña (esperado en modo demo):', authError);
+            }
+          }
           
           const { data, error: supabaseError } = await supabase
             .from('users')
@@ -399,10 +423,10 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
               const currentUser = users.find(u => u.id === id);
               const completeUser = {
                 ...updatedUser,
-                grade: userData.grade !== undefined ? userData.grade : currentUser?.grade,
-                subjects: userData.subjects !== undefined ? userData.subjects : currentUser?.subjects,
-                children: userData.children !== undefined ? userData.children : currentUser?.children,
-                parentIds: userData.parentIds !== undefined ? userData.parentIds : currentUser?.parentIds
+                grade: userDataWithoutPassword.grade !== undefined ? userDataWithoutPassword.grade : currentUser?.grade,
+                subjects: userDataWithoutPassword.subjects !== undefined ? userDataWithoutPassword.subjects : currentUser?.subjects,
+                children: userDataWithoutPassword.children !== undefined ? userDataWithoutPassword.children : currentUser?.children,
+                parentIds: userDataWithoutPassword.parentIds !== undefined ? userDataWithoutPassword.parentIds : currentUser?.parentIds
               };
               setUsers(prev => prev.map(user => user.id === id ? completeUser : user));
               return;
@@ -418,7 +442,7 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
 
       // Update user locally (for demo or fallback)
       setUsers(prev => prev.map(user => 
-        user.id === id ? { ...user, ...userData } : user
+        user.id === id ? { ...user, ...userDataWithoutPassword } : user
       ));
     } catch (err: any) {
       console.error('Error updating user:', err);

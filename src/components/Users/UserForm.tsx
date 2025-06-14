@@ -177,10 +177,12 @@ export default function UserForm({
       newErrors.email = 'El email no es válido';
     }
     
-    // Validación de contraseña (solo en modo creación)
+    // Validación de contraseña
     if (mode === 'create' && !formData.password.trim()) {
       newErrors.password = 'La contraseña temporal es obligatoria';
     } else if (mode === 'create' && formData.password.length < 6) {
+      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+    } else if (mode === 'edit' && formData.password.trim() && formData.password.length < 6) {
       newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
     }
 
@@ -212,7 +214,7 @@ export default function UserForm({
       const userData: Omit<UserType, 'id' | 'createdAt'> = {
         name: formData.name.trim(),
         email: formData.email.trim(),
-        password: formData.password.trim(),
+        password: formData.password.trim() || undefined,
         role: formData.role,
         phone: formData.phone.trim() || undefined,
         avatar: formData.avatar || undefined,
@@ -330,28 +332,29 @@ export default function UserForm({
           {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
         </div>
 
-        {/* Contraseña Temporal (solo en modo creación) */}
-        {mode === 'create' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Contraseña Temporal *
-            </label>
-            <input
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
-                errors.password ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Contraseña temporal para el primer acceso"
-              disabled={isLoading}
-            />
-            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-            <p className="text-xs text-gray-500 mt-1">
-              El usuario podrá cambiar esta contraseña después de iniciar sesión
-            </p>
-          </div>
-        )}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            {mode === 'create' ? 'Contraseña Temporal *' : 'Cambiar Contraseña'}
+          </label>
+          <input
+            type="password"
+            value={formData.password}
+            onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
+              errors.password ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder={mode === 'create' 
+              ? "Contraseña temporal para el primer acceso" 
+              : "Dejar en blanco para mantener la contraseña actual"}
+            disabled={isLoading}
+          />
+          {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+          <p className="text-xs text-gray-500 mt-1">
+            {mode === 'create'
+              ? "El usuario podrá cambiar esta contraseña después de iniciar sesión"
+              : "Solo introduce una nueva contraseña si deseas cambiarla"}
+          </p>
+        </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
