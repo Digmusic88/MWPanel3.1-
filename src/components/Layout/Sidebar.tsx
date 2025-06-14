@@ -29,6 +29,7 @@ const navigationItems = {
     { icon: GraduationCap, label: 'Grupos y Niveles', path: '/admin/groups' },
     { icon: BookOpen, label: 'Cursos y Materias', path: '/admin/courses' },
     { icon: Layers, label: 'Asignaciones', path: '/admin/cursos-materias' },
+    { icon: Layers, label: 'Panel Unificado', path: '/admin/unified' },
     { icon: TrendingUp, label: 'Reportes y Análisis', path: '/admin/reports' },
     { icon: Settings, label: 'Configuración', path: '/admin/settings' },
   ],
