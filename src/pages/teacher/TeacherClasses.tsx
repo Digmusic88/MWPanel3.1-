@@ -1,54 +1,63 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ClipboardList, FilePlus, BarChart3 } from 'lucide-react';
-import { useSubjects } from '../../context/SubjectsContext';
+import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 
+interface TeacherClass {
+  id: string;
+  name: string;
+  level: string;
+  academicYear: string;
+  students: number;
+}
+
 export default function TeacherClasses() {
-  const { subjects } = useSubjects();
   const { user } = useAuth();
+  const [classes, setClasses] = useState<TeacherClass[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const classes = useMemo(() => {
-    if (!user) return [];
-    const result: {
-      id: string;
-      subjectName: string;
-      levelName: string;
-      students: number;
-      schedule: { dayOfWeek: number; startTime: string; endTime: string }[];
-    }[] = [];
+  useEffect(() => {
+    const loadClasses = async () => {
+      if (!user) return;
+      setLoading(true);
 
-    subjects.forEach(subject => {
-      subject.groups.forEach(group => {
-        if (group.teacherId === user.id) {
-          const level = subject.levels.find(l => l.id === group.levelId);
-          result.push({
-            id: group.id,
-            subjectName: subject.name,
-            levelName: level ? level.name : '',
-            students: group.currentStudents,
-            schedule: group.schedule
-          });
-        }
-      });
-    });
+      const { data, error } = await supabase
+        .from('academic_groups')
+        .select(
+          `id, name, academic_year, current_capacity, educational_levels(name)`
+        )
+        .eq('tutor_id', user.id)
+        .eq('is_archived', false)
+        .order('created_at', { ascending: false });
 
-    return result;
-  }, [subjects, user]);
+      if (error) {
+        console.error('Error fetching classes:', error);
+        setClasses([]);
+      } else {
+        const formatted = (data || []).map(g => ({
+          id: g.id as string,
+          name: g.name as string,
+          level: g.educational_levels?.name || '',
+          academicYear: g.academic_year as string,
+          students: g.current_capacity as number
+        }));
+        setClasses(formatted);
+      }
 
-  const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-  const formatSchedule = (schedule: { dayOfWeek: number; startTime: string; endTime: string }[]) => {
-    if (!schedule || schedule.length === 0) return 'Sin horario';
-    return schedule
-      .map(s => `${dayNames[s.dayOfWeek]} ${s.startTime}-${s.endTime}`)
-      .join(', ');
-  };
+      setLoading(false);
+    };
+
+    loadClasses();
+  }, [user]);
 
   if (!user) return null;
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Mis Clases</h1>
-      {classes.length === 0 ? (
+      {loading ? (
+        <p className="text-gray-600">Cargando...</p>
+      ) : classes.length === 0 ? (
         <p className="text-gray-600">Aún no tienes clases asignadas.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -58,10 +67,10 @@ export default function TeacherClasses() {
               className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between"
             >
               <div className="space-y-1">
-                <h3 className="text-lg font-semibold text-gray-900">{cls.subjectName}</h3>
-                <p className="text-sm text-gray-600">Nivel: {cls.levelName}</p>
+                <h3 className="text-lg font-semibold text-gray-900">{cls.name}</h3>
+                <p className="text-sm text-gray-600">Nivel: {cls.level}</p>
+                <p className="text-sm text-gray-600">Año: {cls.academicYear}</p>
                 <p className="text-sm text-gray-600">Alumnos: {cls.students}</p>
-                <p className="text-sm text-gray-600">Horario: {formatSchedule(cls.schedule)}</p>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
