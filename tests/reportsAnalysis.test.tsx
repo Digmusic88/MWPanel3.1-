@@ -3,18 +3,11 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import { vi } from 'vitest';
 import ReportsAnalysis from '../src/pages/admin/ReportsAnalysis';
 import { AuthProvider } from '../src/context/AuthContext';
 import { UsersProvider } from '../src/context/UsersContext';
 import { GroupsProvider } from '../src/context/GroupsContext';
 import { SubjectsProvider } from '../src/context/SubjectsContext';
-
-vi.mock('react-chartjs-2', () => ({
-  Line: () => <div data-testid="line-chart" />,
-  Bar: () => <div data-testid="bar-chart" />,
-  Pie: () => <div data-testid="pie-chart" />
-}));
 
 // Mock localStorage for server environment
 globalThis.localStorage = {
