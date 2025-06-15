@@ -10,6 +10,10 @@ import {
   StudentProgress
 } from '../types/groups';
 import { useAuth } from './AuthContext';
+import { useUsers } from './UsersContext';
+import { supabase } from '../lib/supabase';
+
+const isMockMode = (supabase as any).isMock === true;
 
 // Datos de demostración
 const DEMO_LEVELS: EducationalLevel[] = [
@@ -250,22 +254,166 @@ export function GroupsProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   
   const { user: currentUser } = useAuth();
+  const { users } = useUsers();
+
+  const loadLevels = async () => {
+    if (isMockMode) {
+      setLevels(DEMO_LEVELS);
+      return;
+    }
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('educational_levels')
+        .select('*')
+        .order('order_num', { ascending: true });
+      if (error) throw error;
+      const formatted = (data || []).map(l => ({
+        id: l.id,
+        name: l.name,
+        description: l.description || '',
+        order: l.order_num,
+        subjects: [],
+        isActive: l.is_active
+      })) as EducationalLevel[];
+      setLevels(formatted);
+    } catch (err: any) {
+      console.error('Error loading levels:', err);
+      setError(err.message);
+      setLevels(DEMO_LEVELS);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadGroups = async () => {
+    if (isMockMode) {
+      setGroups(DEMO_GROUPS);
+      return;
+    }
+    try {
+      setLoading(true);
+      const { data: groupsData, error: groupsError } = await supabase
+        .from('academic_groups')
+        .select(`
+          *,
+          educational_levels(id, name, description, order_num, is_active)
+        `)
+        .order('created_at', { ascending: false });
+      if (groupsError) throw groupsError;
+
+      const { data: assignmentsData } = await supabase
+        .from('student_group_assignments')
+        .select('student_id, group_id, is_active');
+
+      const assignmentsMap: Record<string, string[]> = {};
+      (assignmentsData || []).forEach(a => {
+        if (a.is_active) {
+          if (!assignmentsMap[a.group_id]) assignmentsMap[a.group_id] = [];
+          assignmentsMap[a.group_id].push(a.student_id);
+        }
+      });
+
+      const formatted = (groupsData || []).map(g => ({
+        id: g.id,
+        name: g.name,
+        description: g.description || '',
+        level: {
+          id: g.educational_levels.id,
+          name: g.educational_levels?.name || '',
+          description: g.educational_levels?.description || '',
+          order: g.educational_levels?.order_num || 0,
+          subjects: [],
+          isActive: g.educational_levels?.is_active ?? true
+        },
+        academicYear: g.academic_year,
+        maxCapacity: g.max_capacity,
+        currentCapacity: g.current_capacity,
+        tutorId: g.tutor_id,
+        tutorName: undefined,
+        isActive: g.is_active,
+        isArchived: g.is_archived,
+        createdAt: new Date(g.created_at),
+        updatedAt: new Date(g.updated_at),
+        students: assignmentsMap[g.id] || []
+      })) as AcademicGroup[];
+      setGroups(formatted);
+    } catch (err: any) {
+      console.error('Error loading groups:', err);
+      setError(err.message);
+      setGroups(DEMO_GROUPS);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      loadLevels();
+      loadGroups();
+    }
+  }, [currentUser]);
 
   // CRUD Grupos
   const addGroup = async (groupData: Omit<AcademicGroup, 'id' | 'createdAt' | 'updatedAt' | 'currentCapacity'>) => {
     try {
       setError(null);
       setLoading(true);
-      
+      if (isMockMode) {
+        const newGroup: AcademicGroup = {
+          ...groupData,
+          id: `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          currentCapacity: 0,
+          isArchived: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          students: []
+        };
+        setGroups(prev => [...prev, newGroup]);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('academic_groups')
+        .insert([
+          {
+            name: groupData.name,
+            description: groupData.description,
+            level_id: groupData.level.id,
+            academic_year: groupData.academicYear,
+            max_capacity: groupData.maxCapacity,
+            tutor_id: groupData.tutorId,
+            is_active: groupData.isActive,
+            is_archived: false
+          }
+        ])
+        .select(`*, educational_levels(id, name, description, order_num, is_active)`).single();
+      if (error) throw error;
+
       const newGroup: AcademicGroup = {
-        ...groupData,
-        id: `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        currentCapacity: 0,
-        isArchived: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        id: data.id,
+        name: data.name,
+        description: data.description || '',
+        level: {
+          id: data.educational_levels.id,
+          name: data.educational_levels.name,
+          description: data.educational_levels.description || '',
+          order: data.educational_levels.order_num,
+          subjects: [],
+          isActive: data.educational_levels.is_active
+        },
+        academicYear: data.academic_year,
+        maxCapacity: data.max_capacity,
+        currentCapacity: data.current_capacity,
+        tutorId: data.tutor_id,
+        tutorName: undefined,
+        isActive: data.is_active,
+        isArchived: data.is_archived,
+        createdAt: new Date(data.created_at),
+        updatedAt: new Date(data.updated_at),
+        students: []
       };
-      
+
       setGroups(prev => [...prev, newGroup]);
     } catch (err: any) {
       const errorMessage = err.message || 'Error al crear el grupo';
@@ -280,11 +428,58 @@ export function GroupsProvider({ children }: { children: React.ReactNode }) {
     try {
       setError(null);
       setLoading(true);
-      
-      setGroups(prev => prev.map(group => 
-        group.id === id 
-          ? { ...group, ...groupData, updatedAt: new Date() }
-          : group
+      if (isMockMode) {
+        setGroups(prev => prev.map(group =>
+          group.id === id
+            ? { ...group, ...groupData, updatedAt: new Date() }
+            : group
+        ));
+        return;
+      }
+
+      const updateData: any = {
+        name: groupData.name,
+        description: groupData.description,
+        level_id: groupData.level?.id,
+        academic_year: groupData.academicYear,
+        max_capacity: groupData.maxCapacity,
+        tutor_id: groupData.tutorId,
+        is_active: groupData.isActive
+      };
+
+      const { data, error } = await supabase
+        .from('academic_groups')
+        .update(updateData)
+        .eq('id', id)
+        .select(`*, educational_levels(id, name, description, order_num, is_active)`).single();
+      if (error) throw error;
+
+      const updated: AcademicGroup = {
+        id: data.id,
+        name: data.name,
+        description: data.description || '',
+        level: {
+          id: data.educational_levels.id,
+          name: data.educational_levels.name,
+          description: data.educational_levels.description || '',
+          order: data.educational_levels.order_num,
+          subjects: [],
+          isActive: data.educational_levels.is_active
+        },
+        academicYear: data.academic_year,
+        maxCapacity: data.max_capacity,
+        currentCapacity: data.current_capacity,
+        tutorId: data.tutor_id,
+        tutorName: undefined,
+        isActive: data.is_active,
+        isArchived: data.is_archived,
+        createdAt: new Date(data.created_at),
+        updatedAt: new Date(data.updated_at),
+        students: getStudentsByGroup(id)
+      };
+
+      setGroups(prev => prev.map(group =>
+        group.id === id ? updated : group
       ));
     } catch (err: any) {
       const errorMessage = err.message || 'Error al actualizar el grupo';
@@ -306,9 +501,14 @@ export function GroupsProvider({ children }: { children: React.ReactNode }) {
         throw new Error('No se puede eliminar un grupo que tiene estudiantes asignados');
       }
       
-      setGroups(prev => prev.filter(group => group.id !== id));
-      // También eliminar asignaciones relacionadas
-      setGroupAssignments(prev => prev.filter(assignment => assignment.groupId !== id));
+      if (isMockMode) {
+        setGroups(prev => prev.filter(group => group.id !== id));
+        setGroupAssignments(prev => prev.filter(assignment => assignment.groupId !== id));
+      } else {
+        await supabase.from('academic_groups').delete().eq('id', id);
+        setGroups(prev => prev.filter(group => group.id !== id));
+        setGroupAssignments(prev => prev.filter(assignment => assignment.groupId !== id));
+      }
       
       // Registrar en historial
       const historyEntry: AssignmentHistory = {
@@ -348,12 +548,23 @@ export function GroupsProvider({ children }: { children: React.ReactNode }) {
         throw new Error('No se puede archivar un grupo que tiene estudiantes asignados. Primero remueve todos los estudiantes.');
       }
       
-      // Archivar grupo
-      setGroups(prev => prev.map(g => 
-        g.id === id 
-          ? { ...g, isArchived: true, isActive: false, updatedAt: new Date() }
-          : g
-      ));
+      if (isMockMode) {
+        setGroups(prev => prev.map(g =>
+          g.id === id
+            ? { ...g, isArchived: true, isActive: false, updatedAt: new Date() }
+            : g
+        ));
+      } else {
+        await supabase
+          .from('academic_groups')
+          .update({ is_archived: true, is_active: false, updated_at: new Date().toISOString() })
+          .eq('id', id);
+        setGroups(prev => prev.map(g =>
+          g.id === id
+            ? { ...g, isArchived: true, isActive: false, updatedAt: new Date() }
+            : g
+        ));
+      }
       
       // Registrar en historial
       const historyEntry: AssignmentHistory = {
@@ -392,12 +603,23 @@ export function GroupsProvider({ children }: { children: React.ReactNode }) {
         throw new Error('El grupo no está archivado');
       }
       
-      // Desarchivar grupo
-      setGroups(prev => prev.map(g => 
-        g.id === id 
-          ? { ...g, isArchived: false, isActive: true, updatedAt: new Date() }
-          : g
-      ));
+      if (isMockMode) {
+        setGroups(prev => prev.map(g =>
+          g.id === id
+            ? { ...g, isArchived: false, isActive: true, updatedAt: new Date() }
+            : g
+        ));
+      } else {
+        await supabase
+          .from('academic_groups')
+          .update({ is_archived: false, is_active: true, updated_at: new Date().toISOString() })
+          .eq('id', id);
+        setGroups(prev => prev.map(g =>
+          g.id === id
+            ? { ...g, isArchived: false, isActive: true, updatedAt: new Date() }
+            : g
+        ));
+      }
       
       // Registrar en historial
       const historyEntry: AssignmentHistory = {
@@ -505,27 +727,62 @@ export function GroupsProvider({ children }: { children: React.ReactNode }) {
       if (!student.isActive) {
         throw new Error('No se puede asignar un estudiante inactivo');
       }
-      // Crear nueva asignación
-      const newAssignment: StudentGroupAssignment = {
-        id: `assignment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        studentId,
-        studentName: student.name,
-        groupId,
-        groupName: group.name,
-        assignedAt: new Date(),
-        assignedBy: currentUser?.id || 'system',
-        isActive: true,
-        notes
-      };
+      let newAssignment: StudentGroupAssignment;
+
+      if (isMockMode) {
+        newAssignment = {
+          id: `assignment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          studentId,
+          studentName: student.name,
+          groupId,
+          groupName: group.name,
+          assignedAt: new Date(),
+          assignedBy: currentUser?.id || 'system',
+          isActive: true,
+          notes
+        };
+      } else {
+        const { data, error } = await supabase
+          .from('student_group_assignments')
+          .insert([
+            {
+              student_id: studentId,
+              group_id: groupId,
+              assigned_by: currentUser?.id || 'system',
+              notes,
+              is_active: true
+            }
+          ])
+          .select('id, student_id, group_id, assigned_at');
+        if (error) throw error;
+        const row = data![0];
+        newAssignment = {
+          id: row.id,
+          studentId: studentId,
+          groupId: groupId,
+          studentName: student.name,
+          groupName: group.name,
+          assignedAt: new Date(row.assigned_at),
+          assignedBy: currentUser?.id || 'system',
+          isActive: true,
+          notes
+        };
+        await supabase
+          .from('academic_groups')
+          .update({
+            current_capacity: group.currentCapacity + 1,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', groupId);
+      }
 
       setGroupAssignments(prev => [...prev, newAssignment]);
-      
-      // Actualizar grupo
-      setGroups(prev => prev.map(g => 
-        g.id === groupId 
-          ? { 
-              ...g, 
-              currentCapacity: g.currentCapacity + 1, 
+
+      setGroups(prev => prev.map(g =>
+        g.id === groupId
+          ? {
+              ...g,
+              currentCapacity: g.currentCapacity + 1,
               students: [...g.students, studentId],
               updatedAt: new Date()
             }
@@ -574,18 +831,37 @@ export function GroupsProvider({ children }: { children: React.ReactNode }) {
       const allUsers = users || [];
       const student = allUsers.find(u => u.id === studentId);
       const studentName = student ? student.name : 'Estudiante desconocido';
-      // Desactivar asignación
-      setGroupAssignments(prev => prev.map(assignment => 
-        assignment.studentId === studentId && assignment.groupId === groupId
-          ? { ...assignment, isActive: false }
-          : assignment
-      ));
+      if (isMockMode) {
+        setGroupAssignments(prev => prev.map(assignment =>
+          assignment.studentId === studentId && assignment.groupId === groupId
+            ? { ...assignment, isActive: false }
+            : assignment
+        ));
+      } else {
+        await supabase
+          .from('student_group_assignments')
+          .update({ is_active: false })
+          .eq('student_id', studentId)
+          .eq('group_id', groupId)
+          .eq('is_active', true);
+        await supabase
+          .from('academic_groups')
+          .update({
+            current_capacity: Math.max(0, group.currentCapacity - 1),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', groupId);
+        setGroupAssignments(prev => prev.map(assignment =>
+          assignment.studentId === studentId && assignment.groupId === groupId
+            ? { ...assignment, isActive: false }
+            : assignment
+        ));
+      }
 
-      // Actualizar grupo
-      setGroups(prev => prev.map(g => 
-        g.id === groupId 
-          ? { 
-              ...g, 
+      setGroups(prev => prev.map(g =>
+        g.id === groupId
+          ? {
+              ...g,
               currentCapacity: Math.max(0, g.currentCapacity - 1),
               students: g.students.filter(id => id !== studentId),
               updatedAt: new Date()
