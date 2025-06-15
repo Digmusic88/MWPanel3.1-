@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import {
   Users,
   Layers,
@@ -11,31 +11,8 @@ import StatCard from '../../components/UI/StatCard';
 import { useUsers } from '../../context/UsersContext';
 import { useGroups } from '../../context/GroupsContext';
 import { useSubjects } from '../../context/SubjectsContext';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Tooltip,
-  Legend
-} from 'chart.js';
-import { Line, Bar, Pie } from 'react-chartjs-2';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Tooltip,
-  Legend
-);
 
 export default function ReportsAnalysis() {
   const { users, getUsersByRole } = useUsers();
@@ -77,93 +54,6 @@ export default function ReportsAnalysis() {
     };
   }, [users, subjects, groups]);
 
-  // Demo data for charts
-  const attendanceChart = useMemo(() => {
-    const labels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'];
-    return {
-      labels,
-      datasets: [
-        {
-          label: 'Grupo A',
-          data: [95, 97, 96, 94, 98, 97],
-          borderColor: '#3b82f6',
-          backgroundColor: 'rgba(59,130,246,0.3)'
-        },
-        {
-          label: 'Grupo B',
-          data: [92, 90, 91, 93, 94, 92],
-          borderColor: '#10b981',
-          backgroundColor: 'rgba(16,185,129,0.3)'
-        }
-      ]
-    };
-  }, []);
-
-  const gradesChart = useMemo(() => {
-    const labels = ['T1', 'T2', 'T3'];
-    return {
-      labels,
-      datasets: [
-        {
-          label: 'Matemáticas',
-          data: [7.5, 8.0, 8.2],
-          backgroundColor: '#6366f1'
-        },
-        {
-          label: 'Ciencias',
-          data: [7.0, 7.3, 7.8],
-          backgroundColor: '#f59e0b'
-        }
-      ]
-    };
-  }, []);
-
-  const userPie = useMemo(() => {
-    const counts = {
-      admin: getUsersByRole('admin').length,
-      teacher: getUsersByRole('teacher').length,
-      student: getUsersByRole('student').length,
-      parent: getUsersByRole('parent').length
-    };
-    return {
-      labels: ['Admins', 'Profesores', 'Estudiantes', 'Padres'],
-      datasets: [
-        {
-          data: Object.values(counts),
-          backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#ef4444']
-        }
-      ]
-    };
-  }, [users]);
-
-  const progressChart = useMemo(() => {
-    const labels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'];
-    return {
-      labels,
-      datasets: [
-        {
-          label: 'Rendimiento Promedio',
-          data: [70, 72, 74, 75, 77, 80],
-          borderColor: '#8b5cf6',
-          backgroundColor: 'rgba(139,92,246,0.3)'
-        }
-      ]
-    };
-  }, []);
-
-  const activityChart = useMemo(() => {
-    const labels = ['Infantil', 'Primaria', 'Secundaria'];
-    return {
-      labels,
-      datasets: [
-        {
-          label: 'Actividades',
-          data: [30, 45, 25],
-          backgroundColor: '#3b82f6'
-        }
-      ]
-    };
-  }, []);
 
   const exportCSV = () => {
     const csvRows = [
@@ -308,36 +198,8 @@ export default function ReportsAnalysis() {
         </div>
       </div>
 
-      {/* Gráficas */}
+      {/* Contenido del reporte */}
       <div ref={reportRef} className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl shadow-sm border p-4">
-            <h3 className="mb-2 font-semibold">Asistencia por Grupo</h3>
-            <Line data={attendanceChart} options={{ maintainAspectRatio: false }} style={{ height: '200px' }} />
-            <Line data={attendanceChart} options={{ maintainAspectRatio: true }} />
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border p-4">
-            <h3 className="mb-2 font-semibold">Notas Medias por Asignatura</h3>
-            <Bar data={gradesChart} options={{ maintainAspectRatio: false }} style={{ height: '200px' }} />
-            <Bar data={gradesChart} options={{ maintainAspectRatio: true }} />
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border p-4">
-            <h3 className="mb-2 font-semibold">Distribución de Usuarios</h3>
-            <Pie data={userPie} options={{ maintainAspectRatio: false }} style={{ height: '200px' }} />
-            <Pie data={userPie} options={{ maintainAspectRatio: true }} />
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border p-4">
-            <h3 className="mb-2 font-semibold">Progresión Académica</h3>
-            <Line data={progressChart} options={{ maintainAspectRatio: false }} style={{ height: '200px' }} />
-            <Line data={progressChart} options={{ maintainAspectRatio: true }} />
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border p-4 lg:col-span-2">
-            <h3 className="mb-2 font-semibold">Resumen de Actividad</h3>
-            <Bar data={activityChart} options={{ maintainAspectRatio: false }} style={{ height: '200px' }} />
-            <Bar data={activityChart} options={{ maintainAspectRatio: true }} />
-          </div>
-        </div>
-
         {/* Tabla resumen */}
         <div className="bg-white rounded-xl shadow-sm border p-4 overflow-auto">
           <h3 className="mb-2 font-semibold">Resumen del Centro</h3>
