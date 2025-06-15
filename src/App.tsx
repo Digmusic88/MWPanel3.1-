@@ -13,6 +13,7 @@ import CursoMateriasPage from './components/CursosMaterias/CursoMateriasPage';
 import CursosMateriasPage from './features/cursosMaterias/CursosMateriasPage';
 import UnifiedPanelPage from './features/unifiedPanel/UnifiedPanelPage';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
+import TeacherClasses from './pages/teacher/TeacherClasses';
 import StudentDashboard from './pages/student/StudentDashboard';
 import ParentDashboard from './pages/parent/ParentDashboard';
 import ReportsAnalysis from './pages/admin/ReportsAnalysis';
@@ -82,7 +83,7 @@ function AppRoutes() {
         }
       >
         <Route index element={<TeacherDashboard />} />
-        <Route path="classes" element={<div className="p-6">Mis Clases (Próximamente)</div>} />
+        <Route path="classes" element={<TeacherClasses />} />
         <Route path="grades" element={<div className="p-6">Calificaciones y Asistencia (Próximamente)</div>} />
         <Route path="assignments" element={<div className="p-6">Tareas (Próximamente)</div>} />
         <Route path="resources" element={<div className="p-6">Recursos Educativos (Próximamente)</div>} />
