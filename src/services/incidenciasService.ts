@@ -17,30 +17,8 @@ const mockIncidencias: Incidencia[] = [
 ];
 
 export class IncidenciasService {
-  private static isMock() {
-    return (supabase as any).isMock === true;
-  }
-
   static async getAll(): Promise<Incidencia[]> {
-    if (this.isMock()) {
-      return mockIncidencias;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('incidencias')
-        .select('*')
-        .order('fecha', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching incidencias:', error);
-        throw new Error(error.message);
-      }
-
-      return data as Incidencia[];
-    } catch (err) {
-      console.error('Service error in getAll:', err);
-      throw err;
-    }
+    // Always return mock data since the incidencias table doesn't exist in the database
+    return mockIncidencias;
   }
 }
