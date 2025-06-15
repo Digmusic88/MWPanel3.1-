@@ -159,6 +159,15 @@ npm run dev
 - `npm run lint`: Ejecuta el linter
 - `node --loader ts-node/esm check-supabase-connection.js`: Verifica la conexión con Supabase
 
+## Running tests
+
+Vitest se utiliza como test runner. Para ejecutar la suite de pruebas:
+
+```bash
+npm install
+npm test
+```
+
 ## 🔐 Autenticación
 
 El sistema incluye un sistema de autenticación simulado con usuarios de demostración:
