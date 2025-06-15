@@ -179,7 +179,7 @@ La aplicación está completamente optimizada para dispositivos móviles y de es
 - [ ] Sistema de notificaciones en tiempo real
 - [ ] Gestión completa de cursos y materias
 - [ ] Calendario integrado
-- [ ] Sistema de reportes avanzados
+- [x] Módulo básico de reportes y análisis
 - [ ] Chat en tiempo real
 - [ ] Gestión de recursos educativos
 - [ ] Sistema de evaluaciones online
