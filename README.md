@@ -79,6 +79,11 @@ VITE_SUPABASE_URL=tu_supabase_url
 VITE_SUPABASE_ANON_KEY=tu_supabase_anon_key
 ```
 
+Si ejecutas scripts o pruebas fuera del entorno de Vite, la librería intentará
+leer las mismas variables desde `process.env`. Asegúrate de definir
+`VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en tu entorno de ejecución si
+`import.meta.env` no está disponible.
+
 5. Ejecuta las migraciones de la base de datos en Supabase
 
 6. Inicia el servidor de desarrollo:

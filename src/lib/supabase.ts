@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Prefer Vite environment variables but fall back to Node process env
+const viteEnv = typeof import.meta !== 'undefined' ? import.meta.env : undefined;
+const supabaseUrl = viteEnv?.VITE_SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+const supabaseAnonKey =
+  viteEnv?.VITE_SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
 
 // Create a mock client for demo purposes when environment variables are missing
 const createMockClient = () => {
