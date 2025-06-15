@@ -313,23 +313,23 @@ export default function ReportsAnalysis() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-xl shadow-sm border p-4">
             <h3 className="mb-2 font-semibold">Asistencia por Grupo</h3>
-            <Line data={attendanceChart} />
+            <Line data={attendanceChart} height={200} options={{ maintainAspectRatio: false }} />
           </div>
           <div className="bg-white rounded-xl shadow-sm border p-4">
             <h3 className="mb-2 font-semibold">Notas Medias por Asignatura</h3>
-            <Bar data={gradesChart} />
+            <Bar data={gradesChart} height={200} options={{ maintainAspectRatio: false }} />
           </div>
           <div className="bg-white rounded-xl shadow-sm border p-4">
             <h3 className="mb-2 font-semibold">Distribución de Usuarios</h3>
-            <Pie data={userPie} />
+            <Pie data={userPie} height={200} options={{ maintainAspectRatio: false }} />
           </div>
           <div className="bg-white rounded-xl shadow-sm border p-4">
             <h3 className="mb-2 font-semibold">Progresión Académica</h3>
-            <Line data={progressChart} />
+            <Line data={progressChart} height={200} options={{ maintainAspectRatio: false }} />
           </div>
           <div className="bg-white rounded-xl shadow-sm border p-4 lg:col-span-2">
             <h3 className="mb-2 font-semibold">Resumen de Actividad</h3>
-            <Bar data={activityChart} />
+            <Bar data={activityChart} height={200} options={{ maintainAspectRatio: false }} />
           </div>
         </div>
 
