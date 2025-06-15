@@ -1,7 +1,7 @@
 import React from 'react';
 import { Clock, User, BookOpen, FileText, MessageCircle } from 'lucide-react';
 
-interface Activity {
+export interface Activity {
   id: string;
   type: 'grade' | 'assignment' | 'message' | 'course';
   title: string;
@@ -51,7 +51,8 @@ const mockActivities: Activity[] = [
   }
 ];
 
-export default function RecentActivity() {
+export default function RecentActivity({ activities }: { activities?: Activity[] }) {
+  const data = activities === undefined ? mockActivities : activities;
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-6">
@@ -60,7 +61,7 @@ export default function RecentActivity() {
       </div>
       
       <div className="space-y-4">
-        {mockActivities.map((activity) => {
+        {data.length > 0 && data.map((activity) => {
           const Icon = activityIcons[activity.type];
           return (
             <div key={activity.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
@@ -79,10 +80,11 @@ export default function RecentActivity() {
           );
         })}
       </div>
-      
-      <button className="w-full mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium">
-        Ver Todas las Actividades
-      </button>
+      {data.length > 0 && (
+        <button className="w-full mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium">
+          Ver Todas las Actividades
+        </button>
+      )}
     </div>
   );
 }

@@ -158,6 +158,17 @@ npm run dev
 - `npm run preview`: Previsualiza la build de producción
 - `npm run lint`: Ejecuta el linter
 - `node --loader ts-node/esm check-supabase-connection.js`: Verifica la conexión con Supabase
+- `npm run server`: Inicia el pequeño servidor Express para generar respaldos
+
+## 🔄 Respaldo del Sistema
+
+1. Ejecuta el servidor de respaldo:
+
+```bash
+npm run server
+```
+
+2. En el panel de administración presiona **Respaldo del Sistema** para descargar el archivo `backup.zip`.
 
 ## Running tests
 
