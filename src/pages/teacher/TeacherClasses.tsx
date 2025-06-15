@@ -6,9 +6,9 @@ import { useAuth } from '../../context/AuthContext';
 interface TeacherClass {
   id: string;
   name: string;
-  level: string;
-  academicYear: string;
-  students: number;
+  category: string;
+  createdAt: string;
+  archived: boolean;
 }
 
 export default function TeacherClasses() {
@@ -22,24 +22,21 @@ export default function TeacherClasses() {
       setLoading(true);
 
       const { data, error } = await supabase
-        .from('academic_groups')
-        .select(
-          `id, name, academic_year, current_capacity, educational_levels(name)`
-        )
-        .eq('tutor_id', user.id)
-        .eq('is_archived', false)
-        .order('created_at', { ascending: false });
+        .from('cursos_materias')
+        .select('*')
+        .eq('archivado', false)
+        .order('creado_en', { ascending: false });
 
       if (error) {
         console.error('Error fetching classes:', error);
         setClasses([]);
       } else {
-        const formatted = (data || []).map(g => ({
-          id: g.id as string,
-          name: g.name as string,
-          level: g.educational_levels?.name || '',
-          academicYear: g.academic_year as string,
-          students: g.current_capacity as number
+        const formatted = (data || []).map(c => ({
+          id: c.id as string,
+          name: c.nombre as string,
+          category: c.categoria as string,
+          createdAt: c.creado_en as string,
+          archived: c.archivado as boolean
         }));
         setClasses(formatted);
       }
@@ -68,9 +65,10 @@ export default function TeacherClasses() {
             >
               <div className="space-y-1">
                 <h3 className="text-lg font-semibold text-gray-900">{cls.name}</h3>
-                <p className="text-sm text-gray-600">Nivel: {cls.level}</p>
-                <p className="text-sm text-gray-600">Año: {cls.academicYear}</p>
-                <p className="text-sm text-gray-600">Alumnos: {cls.students}</p>
+                <p className="text-sm text-gray-600">Categoría: {cls.category}</p>
+                <p className="text-sm text-gray-600">
+                  Creado: {new Date(cls.createdAt).toLocaleDateString()}
+                </p>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
