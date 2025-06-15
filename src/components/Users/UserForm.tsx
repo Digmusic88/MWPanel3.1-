@@ -35,7 +35,6 @@ interface FormData {
   phone: string;
   avatar: string;
   isActive: boolean;
-  grade: string;
   subjects: string[];
   parentId: string;
 }
@@ -48,15 +47,6 @@ const roleOptions = [
   { value: 'teacher', label: 'Profesor', icon: GraduationCap },
   { value: 'student', label: 'Estudiante', icon: User },
   { value: 'parent', label: 'Padre', icon: Home },
-];
-
-/**
- * Opciones de grados académicos
- */
-const gradeOptions = [
-  '1° Grado', '2° Grado', '3° Grado', '4° Grado', '5° Grado',
-  '6° Grado', '7° Grado', '8° Grado', '9° Grado', '10° Grado',
-  '11° Grado', '12° Grado'
 ];
 
 /**
@@ -90,7 +80,6 @@ export default function UserForm({
     phone: '',
     avatar: '',
     isActive: true,
-    grade: '',
     subjects: [],
     parentId: ''
   });
@@ -115,7 +104,6 @@ export default function UserForm({
         phone: user.phone || '',
         avatar: user.avatar || '',
         isActive: user.isActive,
-        grade: user.grade || '',
         subjects: user.subjects || [],
         parentId: user.parentId || ''
       });
@@ -128,7 +116,6 @@ export default function UserForm({
         phone: '',
         avatar: '',
         isActive: true,
-        grade: '',
         subjects: [],
         parentId: ''
       });
@@ -186,11 +173,6 @@ export default function UserForm({
       newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
     }
 
-    // Validación específica por rol
-    if (formData.role === 'student' && !formData.grade) {
-      newErrors.grade = 'El grupo base es obligatorio para estudiantes';
-    }
-
     if (formData.role === 'teacher' && formData.subjects.length === 0) {
       newErrors.subjects = 'Debe seleccionar al menos una materia para profesores';
     }
@@ -220,7 +202,6 @@ export default function UserForm({
         phone: formData.phone.trim() || undefined,
         avatar: formData.avatar || undefined,
         isActive: formData.isActive,
-        grade: formData.role === 'student' ? formData.grade : undefined,
         subjects: formData.role === 'teacher' ? formData.subjects : undefined,
         parentId: formData.role === 'student' ? formData.parentId || undefined : undefined
       };
@@ -396,27 +377,6 @@ export default function UserForm({
       {/* Campos específicos por rol */}
       {formData.role === 'student' && (
         <div className="p-4 bg-green-50 rounded-lg border border-green-200 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-green-800 mb-2">
-              <GraduationCap className="w-4 h-4 inline mr-2" />
-              Grupo Base *
-            </label>
-            <select
-              value={formData.grade}
-              onChange={(e) => setFormData(prev => ({ ...prev, grade: e.target.value }))}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
-                errors.grade ? 'border-red-500' : 'border-gray-300'
-              }`}
-              disabled={isLoading}
-            >
-              <option value="">Seleccionar grupo base</option>
-              {gradeOptions.map(grade => (
-                <option key={grade} value={grade}>{grade}</option>
-              ))}
-            </select>
-            {errors.grade && <p className="text-red-500 text-sm mt-1">{errors.grade}</p>}
-          </div>
-
           {/* Selección de padre para estudiantes en modo creación */}
           {mode === 'create' && parents.length > 0 && (
             <div>
