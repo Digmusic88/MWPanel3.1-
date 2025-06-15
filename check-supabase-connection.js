@@ -1,5 +1,6 @@
 // Script para verificar la conexión con Supabase
-import { supabase } from './src/lib/supabase.js';
+// Import the TypeScript implementation directly
+import { supabase } from './src/lib/supabase.ts';
 
 async function checkSupabaseConnection() {
   console.log('🔍 Verificando conexión con Supabase...\n');
