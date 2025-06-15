@@ -308,6 +308,36 @@ export default function ReportsAnalysis() {
         </div>
       </div>
 
+      {/* Gráficas */}
+      <div ref={reportRef} className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl shadow-sm border p-4">
+            <h3 className="mb-2 font-semibold">Asistencia por Grupo</h3>
+            <Line data={attendanceChart} options={{ maintainAspectRatio: false }} style={{ height: '200px' }} />
+            <Line data={attendanceChart} options={{ maintainAspectRatio: true }} />
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border p-4">
+            <h3 className="mb-2 font-semibold">Notas Medias por Asignatura</h3>
+            <Bar data={gradesChart} options={{ maintainAspectRatio: false }} style={{ height: '200px' }} />
+            <Bar data={gradesChart} options={{ maintainAspectRatio: true }} />
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border p-4">
+            <h3 className="mb-2 font-semibold">Distribución de Usuarios</h3>
+            <Pie data={userPie} options={{ maintainAspectRatio: false }} style={{ height: '200px' }} />
+            <Pie data={userPie} options={{ maintainAspectRatio: true }} />
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border p-4">
+            <h3 className="mb-2 font-semibold">Progresión Académica</h3>
+            <Line data={progressChart} options={{ maintainAspectRatio: false }} style={{ height: '200px' }} />
+            <Line data={progressChart} options={{ maintainAspectRatio: true }} />
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border p-4 lg:col-span-2">
+            <h3 className="mb-2 font-semibold">Resumen de Actividad</h3>
+            <Bar data={activityChart} options={{ maintainAspectRatio: false }} style={{ height: '200px' }} />
+            <Bar data={activityChart} options={{ maintainAspectRatio: true }} />
+          </div>
+        </div>
+
         {/* Tabla resumen */}
         <div className="bg-white rounded-xl shadow-sm border p-4 overflow-auto">
           <h3 className="mb-2 font-semibold">Resumen del Centro</h3>
