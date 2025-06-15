@@ -11,7 +11,6 @@ import UsersManagement from './pages/admin/UsersManagement';
 import GroupsManagement from './pages/admin/GroupsManagement';
 import CursoMateriasPage from './components/CursosMaterias/CursoMateriasPage';
 import CursosMateriasPage from './features/cursosMaterias/CursosMateriasPage';
-import UnifiedPanelPage from './features/unifiedPanel/UnifiedPanelPage';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import TeacherClasses from './pages/teacher/TeacherClasses';
 import StudentDashboard from './pages/student/StudentDashboard';
@@ -68,7 +67,6 @@ function AppRoutes() {
         <Route path="groups" element={<GroupsManagement />} />
         <Route path="courses" element={<CursoMateriasPage />} />
         <Route path="cursos-materias" element={<CursosMateriasPage />} />
-        <Route path="unified" element={<UnifiedPanelPage />} />
         <Route path="reports" element={<ReportsAnalysis />} />
         <Route path="settings" element={<SystemSettings />} />
       </Route>
