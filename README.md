@@ -157,6 +157,7 @@ npm run dev
 - `npm run build`: Construye la aplicación para producción
 - `npm run preview`: Previsualiza la build de producción
 - `npm run lint`: Ejecuta el linter
+- `node --loader ts-node/esm check-supabase-connection.js`: Verifica la conexión con Supabase
 
 ## 🔐 Autenticación
 
