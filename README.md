@@ -71,8 +71,9 @@ npm install
 ```bash
 cp .env.example .env
 ```
+También puedes copiarlo como `.env.local` si lo prefieres.
 
-4. Configura tu proyecto de Supabase y actualiza las variables en `.env`:
+4. Configura tu proyecto de Supabase y actualiza las variables en `.env` (o `.env.local`):
 ```
 VITE_SUPABASE_URL=tu_supabase_url
 VITE_SUPABASE_ANON_KEY=tu_supabase_anon_key
