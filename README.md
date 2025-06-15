@@ -10,6 +10,7 @@ Una plataforma moderna y completa para la gestión educativa que permite adminis
 - **Búsqueda Inteligente**: Búsqueda en tiempo real por nombre, email o rol
 - **Formulario Mejorado**: Lógica condicional para roles con validaciones específicas
 - **Relaciones Padre-Hijo**: Gestión completa de vínculos familiares
+- **Configuración del Sistema**: Ajuste de parámetros globales como nombre de la institución y notificaciones
 
 ### Roles de Usuario
 - **Administrador**: Gestión completa del sistema
