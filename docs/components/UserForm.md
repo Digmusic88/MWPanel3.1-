@@ -153,7 +153,7 @@ Los errores se muestran debajo de cada campo y incluyen:
 - Validación de formato y tamaño
 - Preview en tiempo real
 
-### StudentParentSelector
+### ParentStudentConnection
 - Búsqueda dinámica de usuarios
 - Selección múltiple
 - Creación de nuevos usuarios
@@ -247,7 +247,7 @@ npm test UserForm.integration.test.tsx
 - `../../context/UsersContext`
 - `../../services/imageService`
 - `../UI/ImageUpload`
-- `./StudentParentSelector`
+- `./ParentStudentConnection`
 - `./FamilyConnectionManager`
 
 ## Consideraciones de Rendimiento

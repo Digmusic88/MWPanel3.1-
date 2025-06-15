@@ -6,7 +6,7 @@ Una plataforma moderna y completa para la gestión educativa que permite adminis
 
 ### Gestión de Usuarios
 - **Vista Dual**: Selector de vista entre tarjetas (grid) y tabla con ordenación
-- **Filtros Avanzados**: Chips clickeables por rol con contadores dinámicos
+- **Filtros Avanzados**: Chips clicables por rol con contadores dinámicos
 - **Búsqueda Inteligente**: Búsqueda en tiempo real por nombre, email o rol
 - **Formulario Mejorado**: Lógica condicional para roles con validaciones específicas
 - **Relaciones Padre-Hijo**: Gestión completa de vínculos familiares
@@ -107,7 +107,7 @@ npm run dev
 
 ### Gestión de Usuarios
 - `ViewToggle`: Selector de vista dual (tarjetas/tabla)
-- `RoleChips`: Filtros por rol con chips clickeables
+- `RoleChips`: Filtros por rol con chips clicables
 - `UserTable`: Vista de tabla con ordenación por columnas
 - `UserCard`: Vista de tarjeta responsiva
 - `UserModal`: Formulario modal con lógica condicional
@@ -132,7 +132,7 @@ npm run dev
 - Transiciones suaves entre vistas
 
 #### 2. Filtros con Chips
-- Chips clickeables por rol con contadores dinámicos
+- Chips clicables por rol con contadores dinámicos
 - Estado visual activo/inactivo
 - Deselección para mostrar todos los usuarios
 
@@ -157,6 +157,7 @@ npm run dev
 - `npm run build`: Construye la aplicación para producción
 - `npm run preview`: Previsualiza la build de producción
 - `npm run lint`: Ejecuta el linter
+- `node --loader ts-node/esm check-supabase-connection.js`: Verifica la conexión con Supabase
 
 ## 🔐 Autenticación
 
