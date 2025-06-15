@@ -313,23 +313,23 @@ export default function ReportsAnalysis() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-xl shadow-sm border p-4">
             <h3 className="mb-2 font-semibold">Asistencia por Grupo</h3>
-            <Line data={attendanceChart} height={200} options={{ maintainAspectRatio: false }} />
+            <Line data={attendanceChart} options={{ maintainAspectRatio: false }} style={{ height: '200px' }} />
           </div>
           <div className="bg-white rounded-xl shadow-sm border p-4">
             <h3 className="mb-2 font-semibold">Notas Medias por Asignatura</h3>
-            <Bar data={gradesChart} height={200} options={{ maintainAspectRatio: false }} />
+            <Bar data={gradesChart} options={{ maintainAspectRatio: false }} style={{ height: '200px' }} />
           </div>
           <div className="bg-white rounded-xl shadow-sm border p-4">
             <h3 className="mb-2 font-semibold">Distribución de Usuarios</h3>
-            <Pie data={userPie} height={200} options={{ maintainAspectRatio: false }} />
+            <Pie data={userPie} options={{ maintainAspectRatio: false }} style={{ height: '200px' }} />
           </div>
           <div className="bg-white rounded-xl shadow-sm border p-4">
             <h3 className="mb-2 font-semibold">Progresión Académica</h3>
-            <Line data={progressChart} height={200} options={{ maintainAspectRatio: false }} />
+            <Line data={progressChart} options={{ maintainAspectRatio: false }} style={{ height: '200px' }} />
           </div>
           <div className="bg-white rounded-xl shadow-sm border p-4 lg:col-span-2">
             <h3 className="mb-2 font-semibold">Resumen de Actividad</h3>
-            <Bar data={activityChart} height={200} options={{ maintainAspectRatio: false }} />
+            <Bar data={activityChart} options={{ maintainAspectRatio: false }} style={{ height: '200px' }} />
           </div>
         </div>
 
