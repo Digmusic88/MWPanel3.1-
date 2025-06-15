@@ -13,10 +13,12 @@ import CursoMateriasPage from './components/CursosMaterias/CursoMateriasPage';
 import CursosMateriasPage from './features/cursosMaterias/CursosMateriasPage';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import TeacherClasses from './pages/teacher/TeacherClasses';
+import TeacherGrades from './pages/teacher/TeacherGrades';
 import StudentDashboard from './pages/student/StudentDashboard';
 import ParentDashboard from './pages/parent/ParentDashboard';
 import ReportsAnalysis from './pages/admin/ReportsAnalysis';
 import SystemSettings from './pages/admin/SystemSettings';
+import GradesManagement from './pages/admin/GradesManagement';
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
   const { user, isLoading } = useAuth();
@@ -68,6 +70,7 @@ function AppRoutes() {
         <Route path="courses" element={<CursoMateriasPage />} />
         <Route path="cursos-materias" element={<CursosMateriasPage />} />
         <Route path="reports" element={<ReportsAnalysis />} />
+        <Route path="grades-management" element={<GradesManagement />} />
         <Route path="settings" element={<SystemSettings />} />
       </Route>
 
@@ -82,7 +85,7 @@ function AppRoutes() {
       >
         <Route index element={<TeacherDashboard />} />
         <Route path="classes" element={<TeacherClasses />} />
-        <Route path="grades" element={<div className="p-6">Calificaciones y Asistencia (Próximamente)</div>} />
+        <Route path="grades" element={<TeacherGrades />} />
         <Route path="assignments" element={<div className="p-6">Tareas (Próximamente)</div>} />
         <Route path="resources" element={<div className="p-6">Recursos Educativos (Próximamente)</div>} />
         <Route path="messages" element={<div className="p-6">Mensajes (Próximamente)</div>} />
