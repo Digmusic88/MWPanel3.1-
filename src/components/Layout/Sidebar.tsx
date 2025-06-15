@@ -27,6 +27,7 @@ const navigationItems = {
     { icon: LayoutDashboard, label: 'Panel Principal', path: '/admin' },
     { icon: Users, label: 'Gestión de Usuarios', path: '/admin/users' },
     { icon: Layers, label: 'Asignaciones', path: '/admin/cursos-materias' },
+    { icon: ClipboardList, label: 'Gestión de Calificaciones', path: '/admin/grades-management' },
     { icon: TrendingUp, label: 'Reportes y Análisis', path: '/admin/reports' },
     { icon: Settings, label: 'Configuración', path: '/admin/settings' },
   ],
