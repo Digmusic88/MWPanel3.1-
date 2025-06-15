@@ -51,7 +51,10 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold text-gray-900">Panel de Administración</h1>
           <p className="text-gray-600">Resumen general de la plataforma educativa</p>
         </div>
-        <button className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 hover:shadow-lg transition-all">
+        <button
+          onClick={() => navigate('/admin/settings')}
+          className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 hover:shadow-lg transition-all"
+        >
           Configuración del Sistema
         </button>
       </div>

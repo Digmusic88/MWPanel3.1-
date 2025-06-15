@@ -16,6 +16,7 @@ import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import StudentDashboard from './pages/student/StudentDashboard';
 import ParentDashboard from './pages/parent/ParentDashboard';
 import ReportsAnalysis from './pages/admin/ReportsAnalysis';
+import SystemSettings from './pages/admin/SystemSettings';
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
   const { user, isLoading } = useAuth();
@@ -68,7 +69,7 @@ function AppRoutes() {
         <Route path="cursos-materias" element={<CursosMateriasPage />} />
         <Route path="unified" element={<UnifiedPanelPage />} />
         <Route path="reports" element={<ReportsAnalysis />} />
-        <Route path="settings" element={<div className="p-6">Configuración del Sistema (Próximamente)</div>} />
+        <Route path="settings" element={<SystemSettings />} />
       </Route>
 
       {/* Rutas de Profesor */}
