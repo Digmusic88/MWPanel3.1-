@@ -6,6 +6,7 @@ export interface Trimester {
   name: string;
   courseId: string;
   order: number;
+  isArchived?: boolean;
 }
 
 export interface GradeFolder {
@@ -15,6 +16,7 @@ export interface GradeFolder {
   name: string;
   description?: string;
   createdAt: string;
+  isArchived?: boolean;
 }
 
 export interface GradeColumn {
@@ -23,6 +25,7 @@ export interface GradeColumn {
   name: string;
   type: 'numeric' | 'text';
   date: string;
+  isArchived?: boolean;
 }
 
 export interface GradeValue {
@@ -43,6 +46,15 @@ interface GradesContextType {
   duplicateFolder: (folderId: string) => Promise<void>;
   addColumn: (folderId: string, name: string) => Promise<void>;
   updateValue: (columnId: string, studentId: string, value: string) => Promise<void>;
+  updateTrimester: (id: string, data: Partial<Trimester>) => Promise<void>;
+  deleteTrimester: (id: string) => Promise<void>;
+  toggleTrimesterArchived: (id: string, archived: boolean) => Promise<void>;
+  updateFolder: (id: string, data: Partial<GradeFolder>) => Promise<void>;
+  deleteFolder: (id: string) => Promise<void>;
+  toggleFolderArchived: (id: string, archived: boolean) => Promise<void>;
+  updateColumn: (id: string, data: Partial<GradeColumn>) => Promise<void>;
+  deleteColumn: (id: string) => Promise<void>;
+  toggleColumnArchived: (id: string, archived: boolean) => Promise<void>;
   loading: boolean;
 }
 
@@ -52,17 +64,17 @@ const isMockMode = (supabase as any).isMock === true;
 
 // Demo data
 const DEMO_TRIMESTERS: Trimester[] = [
-  { id: 't1', name: '1º Trimestre', courseId: 'course-1', order: 1 },
-  { id: 't2', name: '2º Trimestre', courseId: 'course-1', order: 2 },
-  { id: 't3', name: '3º Trimestre', courseId: 'course-1', order: 3 }
+  { id: 't1', name: '1º Trimestre', courseId: 'course-1', order: 1, isArchived: false },
+  { id: 't2', name: '2º Trimestre', courseId: 'course-1', order: 2, isArchived: false },
+  { id: 't3', name: '3º Trimestre', courseId: 'course-1', order: 3, isArchived: false }
 ];
 
 const DEMO_FOLDERS: GradeFolder[] = [
-  { id: 'f1', trimesterId: 't1', subjectId: 'math', name: 'Exámenes', createdAt: new Date().toISOString() }
+  { id: 'f1', trimesterId: 't1', subjectId: 'math', name: 'Exámenes', createdAt: new Date().toISOString(), isArchived: false }
 ];
 
 const DEMO_COLUMNS: GradeColumn[] = [
-  { id: 'c1', folderId: 'f1', name: 'Examen 1', type: 'numeric', date: new Date().toISOString() }
+  { id: 'c1', folderId: 'f1', name: 'Examen 1', type: 'numeric', date: new Date().toISOString(), isArchived: false }
 ];
 
 let demoValues: GradeValue[] = [];
@@ -150,6 +162,49 @@ export function GradesProvider({ children }: { children: React.ReactNode }) {
     setColumns(prev => [...prev, newCol]);
   };
 
+  const updateTrimester = async (id: string, data: Partial<Trimester>) => {
+    setTrimesters(prev => prev.map(t => (t.id === id ? { ...t, ...data } : t)));
+  };
+
+  const deleteTrimester = async (id: string) => {
+    setTrimesters(prev => prev.filter(t => t.id !== id));
+    const folderIds = folders.filter(f => f.trimesterId === id).map(f => f.id);
+    setFolders(prev => prev.filter(f => f.trimesterId !== id));
+    setColumns(prev => prev.filter(c => !folderIds.includes(c.folderId)));
+    setValues(prev => prev.filter(v => !folderIds.includes(columns.find(c => c.id === v.columnId)?.folderId || '')));
+  };
+
+  const toggleTrimesterArchived = async (id: string, archived: boolean) => {
+    updateTrimester(id, { isArchived: archived });
+  };
+
+  const updateFolder = async (id: string, data: Partial<GradeFolder>) => {
+    setFolders(prev => prev.map(f => (f.id === id ? { ...f, ...data } : f)));
+  };
+
+  const deleteFolder = async (id: string) => {
+    setFolders(prev => prev.filter(f => f.id !== id));
+    setColumns(prev => prev.filter(c => c.folderId !== id));
+    setValues(prev => prev.filter(v => v.columnId !== id));
+  };
+
+  const toggleFolderArchived = async (id: string, archived: boolean) => {
+    updateFolder(id, { isArchived: archived });
+  };
+
+  const updateColumn = async (id: string, data: Partial<GradeColumn>) => {
+    setColumns(prev => prev.map(c => (c.id === id ? { ...c, ...data } : c)));
+  };
+
+  const deleteColumn = async (id: string) => {
+    setColumns(prev => prev.filter(c => c.id !== id));
+    setValues(prev => prev.filter(v => v.columnId !== id));
+  };
+
+  const toggleColumnArchived = async (id: string, archived: boolean) => {
+    updateColumn(id, { isArchived: archived });
+  };
+
   const updateValue = async (columnId: string, studentId: string, value: string) => {
     let val = values.find(v => v.columnId === columnId && v.studentId === studentId);
     if (!val) {
@@ -164,7 +219,29 @@ export function GradesProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <GradesContext.Provider value={{ trimesters, folders, columns, values, addTrimester, addFolder, duplicateFolder, addColumn, updateValue, loading }}>
+    <GradesContext.Provider
+      value={{
+        trimesters,
+        folders,
+        columns,
+        values,
+        addTrimester,
+        addFolder,
+        duplicateFolder,
+        addColumn,
+        updateValue,
+        updateTrimester,
+        deleteTrimester,
+        toggleTrimesterArchived,
+        updateFolder,
+        deleteFolder,
+        toggleFolderArchived,
+        updateColumn,
+        deleteColumn,
+        toggleColumnArchived,
+        loading,
+      }}
+    >
       {children}
     </GradesContext.Provider>
   );
